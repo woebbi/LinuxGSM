@@ -83,7 +83,7 @@ jobs:
     - name: ./jc2server update-lgsm
       run: bash ./jc2server update-lgsm
     - name: ./jc2server monitor (offline)
-      run: bash ./jc2server monitor
+      run: bash .github/exitcode.sh "./jc2server monitor" "3"   
     - name: ./jc2server monitor (offline with lockfile)
       run: |
         bash date '+%s' > "${lockdir}/${selfname}.lock"

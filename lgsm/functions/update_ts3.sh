@@ -44,7 +44,7 @@ fn_update_ts3_localbuild(){
 		command_stop.sh
 		exitbypass=1
 		command_start.sh
-		fn_commandname
+		fn_firstcommand_reset
 		totalseconds=0
 		# Check again, allow time to generate logs.
 		while [ ! -d "${serverfiles}/logs" ]||[ -z "$(find "${serverfiles}/logs/"* -name 'ts3server*_0.log' 2> /dev/null)" ]; do
@@ -106,7 +106,7 @@ fn_update_ts3_remotebuild(){
 	elif [ "${arch}" == "x86" ]; then
 		remotebuild=$(curl -s "https://www.teamspeak.com/versions/server.json" | jq -r '.linux.x86.version')
 	fi
-	if [ "${installer}" != "1" ]; then
+	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
 		# Checks if remotebuild variable has been set.
 		if [ -z "${remotebuild}" ]||[ "${remotebuild}" == "null" ]; then
@@ -153,18 +153,18 @@ fn_update_ts3_compare(){
 			command_start.sh
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 		# If server started.
 		else
 			fn_print_restart_warning
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 			exitbypass=1
 			fn_update_ts3_dl
 			exitbypass=1
 			command_start.sh
-			fn_commandname
+			fn_firstcommand_reset
 		fi
 		date +%s > "${lockdir}/lastupdate.lock"
 		alert="update"
@@ -197,7 +197,7 @@ fi
 # The location where the builds are checked and downloaded.
 remotelocation="teamspeak.com"
 
-if [ "${installer}" == "1" ]; then
+if [ "${firstcommandname}" == "INSTALL" ]; then
 	fn_update_ts3_remotebuild
 	fn_update_ts3_dl
 else

@@ -5,12 +5,10 @@
 # Website: https://linuxgsm.com
 # Description: Creates a FastDL directory.
 
-fn_commandname(){
-	commandname="FASTDL"
-	commandaction="Fastdl"
-	functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
-}
-fn_commandname
+commandname="FASTDL"
+commandaction="Fastdl"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+fn_firstcommand_set
 
 check.sh
 
@@ -238,8 +236,7 @@ fn_fastdl_preview(){
 # Builds Garry's Mod fastdl directory content.
 fn_fastdl_gmod(){
 	cd "${systemdir}" || exit
-	for allowed_extention in "${allowed_extentions_array[@]}"
-	do
+	for allowed_extention in "${allowed_extentions_array[@]}"; do
 		fileswc=0
 		tput sc
 		while read -r fastdlfile; do
@@ -313,8 +310,7 @@ fn_fastdl_gmod(){
 }
 
 fn_fastdl_source(){
-	for directory in "${fastdl_directories_array[@]}"
-	do
+	for directory in "${fastdl_directories_array[@]}"; do
 		if [ -d "${systemdir}/${directory}" ]; then
 			if [ "${directory}" == "maps" ]; then
 				local allowed_extentions_array=( "*.bsp" "*.ain" "*.nav" "*.jpg" "*.txt" )
@@ -327,8 +323,7 @@ fn_fastdl_source(){
 			elif [ "${directory}" == "sound" ]; then
 				local allowed_extentions_array=( "*.wav" "*.mp3" "*.ogg" )
 			fi
-			for allowed_extention in "${allowed_extentions_array[@]}"
-			do
+			for allowed_extention in "${allowed_extentions_array[@]}"; do
 				fileswc=0
 				tput sc
 				while read -r fastdlfile; do

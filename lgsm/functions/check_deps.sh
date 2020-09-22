@@ -329,8 +329,7 @@ fn_found_missing_deps(){
 
 fn_check_loop(){
 	# Loop though required depenencies.
-	for deptocheck in ${array_deps_required[*]}
-	do
+	for deptocheck in ${array_deps_required[*]}; do
 		fn_deps_detector
 	done
 
@@ -383,7 +382,7 @@ fn_deps_build_debian(){
 	# Battlefield: Vietnam
 	elif [ "${shortname}" == "bfv" ]; then
 		array_deps_required+=( libncurses5:i386 libstdc++5:i386 )
-		# Battlefield 1942, Counter-Strike: Source, Garry's Mod, No More Room in Hell, Source Forts Classic, Zombie Master Reborn and Zombie Panic: Source
+	# Battlefield 1942, Counter-Strike: Source, Garry's Mod, No More Room in Hell, Source Forts Classic, Zombie Master Reborn and Zombie Panic: Source
 	elif [ "${shortname}" == "bf1942" ]||[ "${shortname}" == "css" ]||[ "${shortname}" == "gmod" ]||[ "${shortname}" == "nmrih" ]||[ "${shortname}" == "sfc" ]||[ "${shortname}" == "zmr" ]||[ "${shortname}" == "zps" ]; then
 		if [ "${arch}" == "x86_64" ]; then
 			array_deps_required+=( libtinfo5:i386 )
@@ -396,6 +395,9 @@ fn_deps_build_debian(){
 	# Call of Duty & Medal of Honor: Allied Assault
 	elif [ "${shortname}" == "cod" ]||[ "${shortname}" == "coduo" ]||[ "${shortname}" == "cod2" ]||[ "${shortname}" == "mohaa" ]; then
 		array_deps_required+=( libstdc++5:i386 )
+	# Ecoserver
+	elif [ "${shortname}" == "eco" ]; then
+		array_deps_required+=( libgdiplus )
 	# Factorio
 	elif [ "${shortname}" == "fctr" ]; then
 		array_deps_required+=( xz-utils )
@@ -403,7 +405,7 @@ fn_deps_build_debian(){
 	elif [ "${shortname}" == "hw" ]||[ "${shortname}" == "rust" ]; then
 		array_deps_required+=( lib32z1 )
 	# Minecraft, Rising World, Wurm
-	elif [ "${shortname}" == "mc" ]||[ "${shortname}" == "rw" ]||[ "${shortname}" == "wurm" ]; then
+	elif [ "${shortname}" == "mc" ]||[ "${shortname}" == "rw" ]; then
 		javaversion=$(java -version 2>&1 | grep "version")
 		if [ "${javaversion}" ]; then
 			# Added for users using Oracle JRE to bypass the check.
@@ -441,12 +443,10 @@ fn_deps_build_debian(){
 	# Unreal Tournament
 	elif [ "${shortname}" == "ut" ]; then
 		array_deps_required+=( unzip )
-	# Unturned
-	elif [ "${shortname}" == "unt" ]; then
-		array_deps_required+=( mono-complete )
 	# Wurm: Unlimited
 	elif [ "${shortname}" == "wurm" ]; then
 		array_deps_required+=( xvfb )
+	# Post Scriptum
 	elif [ "${shortname}" == "pstbs" ]; then
 		array_deps_required+=( libgconf-2-4 )
 	fi
@@ -495,7 +495,7 @@ fn_deps_build_redhat(){
 	# Battlefield: Vietnam
 	elif [ "${shortname}" == "bfv" ]; then
 		array_deps_required+=( compat-libstdc++-33.i686 glibc.i686 )
-		# Battlefield 1942, Counter-Strike: Source, Garry's Mod, No More Room in Hell, Source Forts Classic, Zombie Master Reborn and Zombie Panic: Source
+	# Battlefield 1942, Counter-Strike: Source, Garry's Mod, No More Room in Hell, Source Forts Classic, Zombie Master Reborn and Zombie Panic: Source
 	elif [ "${shortname}" == "bf1942" ]||[ "${shortname}" == "css" ]||[ "${shortname}" == "gmod" ]||[ "${shortname}" == "nmrih" ]||[ "${shortname}" == "sfc" ]||[ "${shortname}" == "zmr" ]||[ "${shortname}" == "zps" ]; then
 		array_deps_required+=( ncurses-libs.i686 )
 	# Brainbread 2, Don't Starve Together & Team Fortress 2
@@ -504,6 +504,9 @@ fn_deps_build_redhat(){
 	# Call of Duty & Medal of Honor: Allied Assault
 	elif [ "${shortname}" == "cod" ]||[ "${shortname}" == "coduo" ]||[ "${shortname}" == "cod2" ]||[ "${shortname}" == "mohaa" ]; then
 		array_deps_required+=( compat-libstdc++-33.i686 )
+	# Ecoserver
+	elif [ "${shortname}" == "eco" ]; then
+		array_deps_required+=( libgdiplus )
 	# Factorio
 	elif [ "${shortname}" == "fctr" ]; then
 		array_deps_required+=( xz )
@@ -511,7 +514,7 @@ fn_deps_build_redhat(){
 	elif [ "${shortname}" == "hw" ]||[ "${shortname}" == "rust" ]; then
 		array_deps_required+=( zlib-devel )
 	# Minecraft, Rising World, Wurm
-	elif [ "${shortname}" == "mc" ]||[ "${shortname}" == "rw" ]||[ "${shortname}" == "wurm" ]; then
+	elif [ "${shortname}" == "mc" ]||[ "${shortname}" == "rw" ]; then
 		javaversion=$(java -version 2>&1 | grep "version")
 		if [ "${javaversion}" ]; then
 			# Added for users using Oracle JRE to bypass the check.
@@ -549,12 +552,10 @@ fn_deps_build_redhat(){
 	# Unreal Tournament
 	elif [ "${shortname}" == "ut" ]; then
 		array_deps_required+=( unzip )
-	# Unturned
-	elif [ "${shortname}" == "unt" ]; then
-		array_deps_required+=( mono-complete )
 	# Wurm: Unlimited
 	elif [ "${shortname}" == "wurm" ]; then
 		array_deps_required+=( xorg-x11-server-Xvfb )
+	# Post Scriptum
 	elif [ "${shortname}" == "pstbs" ]; then
 		array_deps_required+=( GConf2 )
 	fi

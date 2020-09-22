@@ -21,7 +21,7 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_dl_steamcmd(){
 	fn_print_start_nl "${remotelocation}"
-	fn_script_log_info "${commandaction} server: ${remotelocation}"
+	fn_script_log_info "${commandaction} ${selfname}: ${remotelocation}"
 	if [ -n "${branch}" ]; then
 		echo -e "Branch: ${branch}"
 		fn_script_log_info "Branch: ${branch}"
@@ -60,29 +60,29 @@ fn_dl_steamcmd(){
 		if [ "${appid}" == "90" ]; then
 			# If using a specific branch.
 			if [ -n "${branch}" ]&&[ -n "${betapassword}" ]; then
-				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_set_config 90 mod "${appidmod}" +app_update "${appid}" -beta "${branch}" -betapassword "${betapassword}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_set_config 90 mod "${appidmod}" +app_update "${appid}" -beta "${branch}" -betapassword "${betapassword}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			elif [ -n "${branch}" ]; then
-				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_set_config 90 mod "${appidmod}" +app_update "${appid}" -beta "${branch}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_set_config 90 mod "${appidmod}" +app_update "${appid}" -beta "${branch}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			else
-				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_set_config 90 mod "${appidmod}" +app_update "${appid}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_set_config 90 mod "${appidmod}" +app_update "${appid}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			fi
 		# Force Windows Platform type.
-		elif [ "${shortname}" == "ac" ]; then
+		elif [ "${shortname}" == "ac" ]||[ "${shortname}" == "jk2" ]; then
 			if [ -n "${branch}" ]&&[ -n "${betapassword}" ]; then
-				${unbuffer} ${steamcmdcommand} +@sSteamCmdForcePlatformType windows +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" -betapassword "${betapassword}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +@sSteamCmdForcePlatformType windows +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" -betapassword "${betapassword}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			elif [ -n "${branch}" ]; then
-				${unbuffer} ${steamcmdcommand} +@sSteamCmdForcePlatformType windows +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +@sSteamCmdForcePlatformType windows +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			else
-				${unbuffer} ${steamcmdcommand} +@sSteamCmdForcePlatformType windows +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +@sSteamCmdForcePlatformType windows +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			fi
 		# All other servers.
 		else
 			if [ -n "${branch}" ]&&[ -n "${betapassword}" ]; then
-				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" -betapassword "${betapassword}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" -betapassword "${betapassword}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			elif [ -n "${branch}" ]; then
-				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" -beta "${branch}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			else
-				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" ${validate} +quit | tee -a "${lgsmlog}" "${steamcmdlog}"
+				${unbuffer} ${steamcmdcommand} +login "${steamuser}" "${steampass}" +force_install_dir "${serverfiles}" +app_update "${appid}" ${validate} +quit | uniq | tee -a "${lgsmlog}" "${steamcmdlog}"
 			fi
 		fi
 
@@ -91,43 +91,43 @@ fn_dl_steamcmd(){
 		if [ -n "$(grep "Error!" "${steamcmdlog}" | tail -1)" ]||[ -n "$(grep "ERROR!" "${steamcmdlog}" | tail -1)" ]; then
 			# Not enough space.
 			if [ -n "$(grep "0x202" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} server: ${remotelocation}: Not enough space to download server files"
-				fn_script_log_fatal "${commandaction} server: ${remotelocation}: Not enough space to download server files"
+				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Not enough space to download server files"
+				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Not enough space to download server files"
 				core_exit.sh
 			# Need tp purchase game.
 			elif [ -n "$(grep "No subscription" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} server: ${remotelocation}: Steam account does not have a license for the required game"
-				fn_script_log_fatal "${commandaction} server: ${remotelocation}: Steam account does not have a license for the required game"
+				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Steam account does not have a license for the required game"
+				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Steam account does not have a license for the required game"
 				core_exit.sh
 			# Two-factor authentication failure
 			elif [ -n "$(grep "Two-factor code mismatch" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} server: ${remotelocation}: Two-factor authentication failure"
-				fn_script_log_fatal "${commandaction} server: ${remotelocation}: Two-factor authentication failure"
+				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Two-factor authentication failure"
+				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Two-factor authentication failure"
 				core_exit.sh
 				# Incorrect Branch password
 				elif [ -n "$(grep "Password check for AppId" "${steamcmdlog}" | tail -1)" ]; then
-					fn_print_failure_nl "${commandaction} server: ${remotelocation}: betapassword is incorrect"
-					fn_script_log_fatal "${commandaction} server: ${remotelocation}: betapassword is incorrect"
+					fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: betapassword is incorrect"
+					fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: betapassword is incorrect"
 					core_exit.sh
 			# Update did not finish.
 			elif [ -n "$(grep "0x402" "${steamcmdlog}" | tail -1)" ]||[ -n "$(grep "0x602" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_error2_nl "${commandaction} server: ${remotelocation}: Update required but not completed - check network"
-				fn_script_log_error "${commandaction} server: ${remotelocation}: Update required but not completed - check network"
+				fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Update required but not completed - check network"
+				fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Update required but not completed - check network"
 			else
-				fn_print_error2_nl "${commandaction} server: ${remotelocation}: Unknown error occured"
-				fn_script_log_error "${commandaction} server: ${remotelocation}: Unknown error occured"
+				fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Unknown error occured"
+				fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Unknown error occured"
 			fi
 		elif [ "${exitcode}" != "0" ]; then
-			fn_print_error2_nl "${commandaction} server: ${remotelocation}: Exit code: ${exitcode}"
-			fn_script_log_error "${commandaction} server: ${remotelocation}: Exit code: ${exitcode}"
+			fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Exit code: ${exitcode}"
+			fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Exit code: ${exitcode}"
 		else
-			fn_print_complete_nl "${commandaction} server: ${remotelocation}"
-			fn_script_log_pass "${commandaction} server: ${remotelocation}"
+			fn_print_complete_nl "${commandaction} ${selfname}: ${remotelocation}"
+			fn_script_log_pass "${commandaction} ${selfname}: ${remotelocation}"
 		fi
 
 		if [ "${counter}" -gt "10" ]; then
-			fn_print_failure_nl "${commandaction} server: ${remotelocation}: Did not complete the download, too many retrys"
-			fn_script_log_fatal "${commandaction} server: ${remotelocation}: Did not complete the download, too many retrys"
+			fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Did not complete the download, too many retrys"
+			fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Did not complete the download, too many retrys"
 			core_exit.sh
 		fi
 	done
@@ -248,8 +248,7 @@ fn_fetch_file(){
 			counter=1
 			remote_fileurls_array=( remote_fileurl )
 		fi
-		for remote_fileurl_array in "${remote_fileurls_array[@]}"
-		do
+		for remote_fileurl_array in "${remote_fileurls_array[@]}"; do
 			if [ "${remote_fileurl_array}" == "remote_fileurl" ]; then
 				fileurl="${remote_fileurl}"
 				fileurl_name="${remote_fileurl_name}"

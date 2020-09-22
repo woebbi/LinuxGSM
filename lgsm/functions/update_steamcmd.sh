@@ -48,7 +48,7 @@ fn_update_steamcmd_remotebuild(){
 		remotebuild=$(${steamcmdcommand} +login "${steamuser}" "${steampass}" +app_info_update 1 +app_info_print "${appid}" +quit | sed '1,/branches/d' | sed "1,/${branch}/d" | grep -m 1 buildid | tr -cd '[:digit:]')
 	fi
 
-	if [ "${installer}" != "1" ]; then
+	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
 		# Checks if remotebuild variable has been set.
 		if [ -z "${remotebuild}" ]||[ "${remotebuild}" == "null" ]; then
@@ -106,12 +106,12 @@ fn_update_steamcmd_compare(){
 			fn_print_restart_warning
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 			exitbypass=1
 			fn_dl_steamcmd
 			exitbypass=1
 			command_start.sh
-			fn_commandname
+			fn_firstcommand_reset
 		fi
 		date +%s > "${lockdir}/lastupdate.lock"
 		alert="update"
@@ -203,12 +203,12 @@ if [ "${forceupdate}" == "1" ]; then
 		fn_print_restart_warning
 		exitbypass=1
 		command_stop.sh
-		fn_commandname
+		fn_firstcommand_reset
 		fn_dl_steamcmd
 		date +%s > "${lockdir}/lastupdate.lock"
 		exitbypass=1
 		command_start.sh
-		fn_commandname
+		fn_firstcommand_reset
 	else
 		fn_dl_steamcmd
 		date +%s > "${lockdir}/lastupdate.lock"

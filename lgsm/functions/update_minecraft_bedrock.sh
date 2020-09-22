@@ -7,10 +7,10 @@
 functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_update_minecraft_dl(){
-	latestmcbuildurl=$(curl -s "https://www.minecraft.net/en-us/download/server/bedrock/" | grep -o 'https://minecraft.azureedge.net/bin-linux/[^"]*zip')
+	latestmcbuildurl=$(curl -Ls "https://www.minecraft.net/en-us/download/server/bedrock/" | grep -o 'https://minecraft.azureedge.net/bin-linux/[^"]*zip')
 	fn_fetch_file "${latestmcbuildurl}" "" "" "" "${tmpdir}" "bedrock_server.${remotebuild}.zip"
 	echo -e "Extracting to ${serverfiles}...\c"
-	if [ "${installer}" == "1" ]; then
+	if [ "${firstcommandname}" == "INSTALL" ]; then
 		unzip -oq "${tmpdir}/bedrock_server.${remotebuild}.zip" -x "server.properties" -d "${serverfiles}"
 	else
 		unzip -oq "${tmpdir}/bedrock_server.${remotebuild}.zip" -x "permissions.json" "server.properties" "whitelist.json" -d "${serverfiles}"
@@ -47,16 +47,16 @@ fn_update_minecraft_localbuild(){
 		if [ "${status}" == "0" ]; then
 			exitbypass=1
 			command_start.sh
-			fn_commandname
+			fn_firstcommand_reset
 			sleep 3
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 		# If server started.
 		else
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 		fi
 	fi
 
@@ -77,8 +77,8 @@ fn_update_minecraft_localbuild(){
 
 fn_update_minecraft_remotebuild(){
 	# Gets remote build info.
-	remotebuild=$(curl -s "https://www.minecraft.net/en-us/download/server/bedrock/" | grep -o 'https://minecraft.azureedge.net/bin-linux/[^"]*' | sed 's/.*\///' | grep -Eo "[.0-9]+[0-9]")
-	if [ "${installer}" != "1" ]; then
+	remotebuild=$(curl -Ls "https://www.minecraft.net/en-us/download/server/bedrock/" | grep -o 'https://minecraft.azureedge.net/bin-linux/[^"]*' | sed 's/.*\///' | grep -Eo "[.0-9]+[0-9]")
+	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
 		# Checks if remotebuild variable has been set.
 		if [ -z "${remotebuild}" ]||[ "${remotebuild}" == "null" ]; then
@@ -126,18 +126,18 @@ fn_update_minecraft_compare(){
 			command_start.sh
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 		# If server started.
 		else
 			fn_print_restart_warning
 			exitbypass=1
 			command_stop.sh
-			fn_commandname
+			fn_firstcommand_reset
 			exitbypass=1
 			fn_update_minecraft_dl
 			exitbypass=1
 			command_start.sh
-			fn_commandname
+			fn_firstcommand_reset
 		fi
 		date +%s > "${lockdir}/lastupdate.lock"
 		alert="update"
@@ -158,7 +158,7 @@ fn_update_minecraft_compare(){
 # The location where the builds are checked and downloaded.
 remotelocation="minecraft.net"
 
-if [ "${installer}" == "1" ]; then
+if [ "${firstcommandname}" == "INSTALL" ]; then
 	fn_update_minecraft_remotebuild
 	fn_update_minecraft_dl
 else

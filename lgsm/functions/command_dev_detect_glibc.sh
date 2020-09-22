@@ -5,12 +5,10 @@
 # Description: Automatically detects the version of GLIBC that is required.
 # Can check a file or directory recursively.
 
-fn_commandname(){
-	commandname="DEV-DETECT-GLIBC"
-	commandaction="Developer detect glibc"
-	functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
-}
-fn_commandname
+commandname="DEV-DETECT-GLIBC"
+commandaction="Developer detect glibc"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+fn_firstcommand_set
 
 echo -e "================================="
 echo -e "glibc Requirements Checker"
@@ -37,8 +35,7 @@ echo -e ""
 
 
 glibc_check_dir_array=( steamcmddir serverfiles )
-for glibc_check_var in "${glibc_check_dir_array[@]}"
-do
+for glibc_check_var in "${glibc_check_dir_array[@]}"; do
 	if [ "${glibc_check_var}" == "serverfiles" ]; then
 		glibc_check_dir="${serverfiles}"
 		glibc_check_name="${gamename}"

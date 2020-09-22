@@ -4,12 +4,10 @@
 # Website: https://linuxgsm.com
 # Description: Handles updating of servers.
 
-fn_commandname(){
-	commandname="UPDATE"
-	commandaction="Updating"
-	functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
-}
-fn_commandname
+commandname="UPDATE"
+commandaction="Updating"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+fn_firstcommand_set
 
 fn_print_dots ""
 check.sh
@@ -28,6 +26,8 @@ elif [ "${shortname}" == "fctr" ]; then
 	update_factorio.sh
 elif [ "${shortname}" == "mta" ]; then
 	update_mta.sh
+elif [ "${shortname}" == "jk2" ]; then
+	update_jediknight2.sh
 else
 	update_steamcmd.sh
 fi

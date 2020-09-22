@@ -4,12 +4,10 @@
 # Website: https://linuxgsm.com
 # Description: Runs the server without tmux and directly from the terminal.
 
-fn_commandname(){
-	commandname="DEBUG"
-	commandaction="Debuging"
-	functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
-}
-fn_commandname
+commandname="DEBUG"
+commandaction="Debuging"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+fn_firstcommand_set
 
 # Trap to remove lockfile on quit.
 fn_lockfile_trap(){
@@ -57,11 +55,8 @@ if [ "${glibc}" ]; then
 fi
 
 # Server IP
-if [ "${multiple_ip}" == "1" ]; then
-	echo -e "${lightblue}Server IP:\t${default}NOT SET"
-else
-	echo -e "${lightblue}Server IP:\t${default}${ip}:${port}"
-fi
+echo -e "${lightblue}Game Server IP:\t${default}${ip}:${port}"
+
 # External server IP.
 if [ "${extip}" ]; then
 	if [ "${ip}" != "${extip}" ]; then
@@ -84,14 +79,15 @@ echo -e "Press CTRL+c to drop out of debug mode."
 fn_print_warning_nl "If ${selfname} is already running it will be stopped."
 echo -e ""
 if ! fn_prompt_yn "Continue?" Y; then
-	return
+	exitcode=0
+	core_exit.sh
 fi
 
 fn_print_info_nl "Stopping any running servers"
 fn_script_log_info "Stopping any running servers"
 exitbypass=1
 command_stop.sh
-fn_commandname
+fn_firstcommand_reset
 unset exitbypass
 fn_print_dots "Starting debug"
 fn_script_log_info "Starting debug"

@@ -5,12 +5,10 @@
 # Website: https://linuxgsm.com
 # Description: Creates a .tar.gz file in the backup directory.
 
-fn_commandname(){
-	commandname="BACKUP"
-	commandaction="Backing up"
-	functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
-}
-fn_commandname
+commandname="BACKUP"
+commandaction="Backing up"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+fn_firstcommand_set
 
 check.sh
 
@@ -77,7 +75,7 @@ fn_backup_stop_server(){
 		startserver="1"
 		exitbypass=1
 		command_stop.sh
-		fn_commandname
+		fn_firstcommand_reset
 	fi
 }
 
@@ -220,21 +218,18 @@ fn_backup_relpath() {
 
 	# Compare the leading entries of each array.  These common elements will be clipped off.
 	# for the relative path output.
-	for ((base=0; base<${#rdirtoks[@]}; base++))
-	do
+	for ((base=0; base<${#rdirtoks[@]}; base++)); do
 		[[ "${rdirtoks[$base]}" != "${bdirtoks[$base]}" ]] && break
 	done
 
 	# Next, climb out of the remaining rootdir location with updir references.
-	for ((x=base;x<${#rdirtoks[@]};x++))
-	do
+	for ((x=base;x<${#rdirtoks[@]};x++)); do
 		echo -n "../"
 	done
 
 	# Climb down the remaining components of the backupdir location.
-	for ((x=base;x<$(( ${#bdirtoks[@]} - 1 ));x++))
-	do
-				echo -n "${bdirtoks[$x]}/"
+	for ((x=base;x<$(( ${#bdirtoks[@]} - 1 ));x++)); do
+		echo -n "${bdirtoks[$x]}/"
 	done
 
 	# In the event there were no directories left in the backupdir above to
@@ -252,7 +247,7 @@ fn_backup_start_server(){
 	if [ -n "${startserver}" ]; then
 		exitbypass=1
 		command_start.sh
-		fn_commandname
+		fn_firstcommand_reset
 	fi
 }
 

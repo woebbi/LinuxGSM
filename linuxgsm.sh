@@ -20,7 +20,7 @@ if [ -f ".dev-debug" ]; then
 	set -x
 fi
 
-version="v20.3.3"
+version="v20.5.0"
 shortname="core"
 gameservername="core"
 commandname="CORE"
@@ -90,8 +90,7 @@ fn_bootstrap_fetch_file(){
 			remote_fileurls_array=( remote_fileurl )
 		fi
 
-		for remote_fileurl_array in "${remote_fileurls_array[@]}"
-		do
+		for remote_fileurl_array in "${remote_fileurls_array[@]}"; do
 			if [ "${remote_fileurl_array}" == "remote_fileurl" ]; then
 				fileurl="${remote_fileurl}"
 				fileurl_name="${remote_fileurl_name}"
@@ -389,7 +388,7 @@ else
 			mkdir -p "${configdirserver}"
 			echo -en "copying _default.cfg...\c"
 			cp -R "${configdirdefault}/config-lgsm/${gameservername}/_default.cfg" "${configdirserver}/_default.cfg"
-			if [ $? -ne 0 ]; then
+			if [ $? != 0 ]; then
 				echo -e "FAIL"
 				exit 1
 			else
@@ -401,7 +400,7 @@ else
 				fn_print_warn_nl "_default.cfg has altered. reloading config."
 				echo -en "copying _default.cfg...\c"
 				cp -R "${configdirdefault}/config-lgsm/${gameservername}/_default.cfg" "${configdirserver}/_default.cfg"
-				if [ $? -ne 0 ]; then
+				if [ $? != 0 ]; then
 					echo -e "FAIL"
 					exit 1
 				else

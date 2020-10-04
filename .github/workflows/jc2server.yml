@@ -82,7 +82,7 @@ jobs:
     - name: Simulate out-of-date modules
       run: |
         echo "test" > lgsm/tmp/linuxgsm.sh
-        echo "test" > lgsm/config-default/jc2server/_default.cfg
+        echo "test" > lgsm/config-default/config-lgsm/jc2server/_default.cfg
         echo "test" > lgsm/functions/alert.sh
     - name: ./jc2server update-lgsm
       run: bash ./jc2server update-lgsm

@@ -39,7 +39,7 @@ jobs:
       run: bash ./jc2server auto-install
     # Speed up messages
     - name: Speed up message display
-      run: bash echo "sleeptime=\"0.1\"" lgsm/config-lgsm/jc2server/common.cfg
+      run: echo "sleeptime=\"0.1\"" lgsm/config-lgsm/jc2server/common.cfg
     # Start. Stop, Restart
     - name: ./jc2server start (no ip set)
       run: bash ./jc2server start

@@ -23,7 +23,7 @@ jobs:
     # Runs a single command using the runners shell
     - name: linuxgsm.sh pre-test setup
       run: |
-        chmod +x lgsm/functions/*
+        rm -rf lgsm/*
     - name: ./linuxgsm.sh (get-opt)
       run: bash ./linuxgsm.sh
     - name: ./linuxgsm.sh list
@@ -90,7 +90,7 @@ jobs:
       run: bash .github/exitcode.sh "./jc2server monitor" "3"
     - name: ./jc2server monitor (offline with lockfile)
       run: |
-        bash date '+%s' > "lgsm/lock/jc2server.lock"
+        date '+%s' > "lgsm/lock/jc2server.lock"
         bash ./jc2server monitor
     - name: ./jc2server monitor (offline with no lockfile)
       run: |

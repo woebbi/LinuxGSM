@@ -86,6 +86,7 @@ jobs:
         echo "#test" >> lgsm/functions/alert.sh
     - name: ./jc2server update-lgsm
       run: bash ./jc2server update-lgsm
+    # monitor
     - name: ./jc2server monitor (offline)
       run: bash .github/exitcode.sh "./jc2server monitor" "3"
     - name: ./jc2server monitor (offline with lockfile)
@@ -97,4 +98,12 @@ jobs:
         bash ./jc2server monitor
     - name: ./jc2server test-alert
       run: |
-        bash ./jc2server test-alert
+        bash bash .github/exitcode.sh "./jc2server test-alert" "3"
+    # details
+    - name: ./jc2server details
+      run: bash ./jc2server details
+    - name: ./jc2server post-details
+      run: bash ./jc2server post-details
+    # Backup
+    - name: ./jc2server backup
+      run: bash ./jc2server backup

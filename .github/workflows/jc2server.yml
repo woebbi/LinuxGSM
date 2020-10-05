@@ -98,7 +98,7 @@ jobs:
         bash ./jc2server monitor
     - name: ./jc2server test-alert
       run: |
-        bash bash .github/exitcode.sh "./jc2server test-alert" "3"
+        bash .github/exitcode.sh "./jc2server test-alert" "3"
     # details
     - name: ./jc2server details
       run: bash ./jc2server details

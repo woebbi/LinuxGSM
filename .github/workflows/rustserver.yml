@@ -36,8 +36,6 @@ jobs:
     - name: ./rustserver auto-install
       run: bash ./rustserver auto-install
     # Start. Stop, Restart
-    - name: ./rustserver start (no ip set)
-      run: bash .github/exitcode.sh "./rustserver start" "1"
     - name: ./rustserver start
       run: bash ./rustserver start
     - name: ./rustserver start (already online)

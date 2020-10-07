@@ -25,5 +25,5 @@ jobs:
     - uses: FranzDiebold/github-env-vars-action@v1.2.0
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-    - name: ./linuxgsm.sh jc2server
-      run: bash grep "http://linuxgsm.download" lgsm/functions/install_server_files.sh | tee download-urls.txt
+    - name: Gather Download urls
+      run: grep "http://linuxgsm.download" lgsm/functions/install_server_files.sh | tee download-urls.txt

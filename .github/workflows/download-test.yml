@@ -7,13 +7,13 @@ name: download-test
 on:
   push:
     # Sequence of patterns matched against refs/heads
-    branches:    
+    #branches:    
       # Push events on main branch
-      - master
+    #  - master
       # Push events to release branches
-      - 'release/**'
+    #  - 'release/**'
       # Push events to release branches
-      - 'hotfix/**'
+    #  - 'hotfix/**'
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"

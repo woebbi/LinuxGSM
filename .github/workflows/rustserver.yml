@@ -60,7 +60,7 @@ jobs:
         bash ./rustserver update
     - name: ./rustserver update (remove appmanifest file)
       run: |
-        rm --verbose "serverfiles/steamapps/appmanifest_261140.acf"
+        rm --verbose "serverfiles/steamapps/appmanifest_258550.acf"
         bash ./rustserver update
     - name: ./rustserver force-update (offline)
       run: bash ./rustserver force-update

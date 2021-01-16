@@ -55,11 +55,8 @@ if [ "${glibc}" ]; then
 fi
 
 # Server IP
-if [ "${multiple_ip}" == "1" ]; then
-	echo -e "${lightblue}Server IP:\t${default}NOT SET"
-else
-	echo -e "${lightblue}Server IP:\t${default}${ip}:${port}"
-fi
+echo -e "${lightblue}Game Server IP:\t${default}${ip}:${port}"
+
 # External server IP.
 if [ "${extip}" ]; then
 	if [ "${ip}" != "${extip}" ]; then
@@ -98,6 +95,8 @@ fn_print_ok_nl "Starting debug"
 
 # Create lockfile.
 date '+%s' > "${lockdir}/${selfname}.lock"
+echo "${version}" >> "${lockdir}/${selfname}.lock"
+echo "${port}" >> "${lockdir}/${selfname}.lock"
 fn_script_log_info "Lockfile generated"
 fn_script_log_info "${lockdir}/${selfname}.lock"
 

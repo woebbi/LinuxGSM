@@ -60,6 +60,15 @@ fn_alert_update(){
 	alertbody="${gamename} received update"
 }
 
+fn_alert_check_update(){
+	fn_script_log_info "Sending alert: Update available"
+	alertsubject="Alert - ${selfname} - Update available"
+	alertemoji="🎮"
+	alertsound="1"
+	alerturl="not enabled"
+	alertbody="${gamename} update available"
+}
+
 fn_alert_permissions(){
 	fn_script_log_info "Sending alert: Permissions error"
 	alertsubject="Alert - ${selfname}: Permissions error"
@@ -88,6 +97,8 @@ elif [ "${alert}" == "test" ]; then
 	fn_alert_test
 elif [ "${alert}" == "update" ]; then
 	fn_alert_update
+elif [ "${alert}" == "check-update" ]; then
+	fn_alert_check_update
 elif [ "${alert}" == "config" ]; then
 	fn_alert_config
 fi
@@ -100,6 +111,7 @@ if [ "${postalert}" == "on" ]&&[ -n "${postalert}" ]; then
 	exitbypass=1
 	command_postdetails.sh
 	fn_firstcommand_reset
+	unset exitbypass
 elif [ "${postalert}" != "on" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
 	fn_print_warn_nl "More Info not enabled"
 	fn_script_log_warn "More Info alerts not enabled"
@@ -189,6 +201,17 @@ elif [ -z "${telegramchatid}" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
 	fn_print_error_nl "Telegram chat id not set."
 	echo -e "* https://docs.linuxgsm.com/alerts/telegram"
 	fn_script_error "Telegram chat id not set."
+fi
+
+if [ "${rocketchatalert}" == "on" ]&&[ -n "${rocketchatalert}" ]; then
+	alert_rocketchat.sh
+elif [ "${rocketchatalert}" != "on" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
+	fn_print_warn_nl "Rocketchat alerts not enabled"
+	fn_script_log_warn "Rocketchat alerts not enabled"
+elif [ -z "${rocketchattoken}" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
+	fn_print_error_nl "Rocketchat token not set"
+	#echo -e "* https://docs.linuxgsm.com/alerts/slack"
+	fn_script_error "Rocketchat token not set"
 fi
 
 if [ "${slackalert}" == "on" ]&&[ -n "${slackalert}" ]; then

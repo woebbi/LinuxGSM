@@ -6,13 +6,29 @@
 
 functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-fn_print_dots "Sending Email alert: SendGrid: ${email}"
+fn_print_dots "Sending Email alert: SendGrid: ${sendgridemail}"
 
-sendgridsend=$(curl -s --request POST \
-  --url https://api.sendgrid.com/v3/mail/send \
-  --header "Authorization: Bearer ${sendgridtoken}" \
-  --header 'Content-Type: application/json' \
-  --data '{"personalizations": [{"to": [{"email": ${sendgridemail}"}]}],"from": {"email": "${sendgridemailfrom}"},"subject": "${alertemoji} ${alertsubject} ${alertemoji}","content": [{"type": "text/plain", "value": "$(cat "${alertlog}")"}]}')
+    # Prepare the recipe
+    REQUEST_DATA='{
+        "personalizations": [{
+            "to": [{ "email": "'"${sendgridemail}"'" }],
+        }],
+        "subject": "'"${alertemoji} ${alertsubject} ${alertemoji}"'",
+        "from": {
+            "email": "'"${sendgridemailfrom}"'",
+            "name": "'"LinuxGSM"'"
+        },
+        "content": [{
+            "type": "text/html",
+            "value": "'$(cat "${alertlog}")'"
+        }]
+    }';
+
+    # Shoot the email
+    curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+        -H "Authorization: Bearer ${sendgridtoken}" \
+        -H "Content-Type: application/json" \
+        -d "$REQUEST_DATA"
 
 if [ -z "${sendgridsend}" ]; then
 	fn_print_fail_nl "Sending Email alert: SendGrid: ${sendgridemail}"

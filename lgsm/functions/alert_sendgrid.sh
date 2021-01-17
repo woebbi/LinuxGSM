@@ -19,7 +19,7 @@ data='{
 				"name": "'"LinuxGSM"'"
 		},
 		"content": [{
-				"type": "text/html",
+				"type": "text/plain"
 				"value": "'$(cat "${alertlog}" | sed ':a;N;$!ba;s/\n/\\n/g')'"
 		}]
 }';

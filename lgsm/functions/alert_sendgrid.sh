@@ -8,27 +8,27 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_print_dots "Sending Email alert: SendGrid: ${sendgridemail}"
 
-    # Prepare the recipe
-    REQUEST_DATA='{
-        "personalizations": [{
-            "to": [{ "email": "'"${sendgridemail}"'" }],
-        }],
-        "subject": "'"${alertemoji} ${alertsubject} ${alertemoji}"'",
-        "from": {
-            "email": "'"${sendgridemailfrom}"'",
-            "name": "'"LinuxGSM"'"
-        },
-        "content": [{
-            "type": "text/html",
-            "value": "'$(cat "${alertlog}")'"
-        }]
-    }';
+# Prepare the recipe
+REQUEST_DATA='{
+		"personalizations": [{
+				"to": [{ "email": "'"${sendgridemail}"'" }],
+		}],
+		"subject": "'"${alertemoji} ${alertsubject} ${alertemoji}"'",
+		"from": {
+				"email": "'"${sendgridemailfrom}"'",
+				"name": "'"LinuxGSM"'"
+		},
+		"content": [{
+				"type": "text/html",
+				"value": "'$(cat "${alertlog}" | sed ':a;N;$!ba;s/\n/\\n/g')'"
+		}]
+}';
 
-    # Shoot the email
-    curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
-        -H "Authorization: Bearer ${sendgridtoken}" \
-        -H "Content-Type: application/json" \
-        -d "$REQUEST_DATA"
+# Shoot the email
+curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+		-H "Authorization: Bearer ${sendgridtoken}" \
+		-H "Content-Type: application/json" \
+		-d "$REQUEST_DATA"
 
 if [ -z "${sendgridsend}" ]; then
 	fn_print_fail_nl "Sending Email alert: SendGrid: ${sendgridemail}"

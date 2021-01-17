@@ -11,7 +11,7 @@ fn_print_dots "Sending Email alert: SendGrid: ${sendgridemail}"
 # Prepare the recipe
 data='{
 		"personalizations": [{
-				"to": [{ "email": "'"${sendgridemail}"'" }],
+			"to": [{ "email": "'"${sendgridemail}"'" }],
 		}],
 		"subject": "'"${alertemoji} ${alertsubject} ${alertemoji}"'",
 		"from": {
@@ -19,13 +19,13 @@ data='{
 				"name": "'"LinuxGSM"'"
 		},
 		"content": [{
-				"type": "text/plain"
+				"type": "text/plain",
 				"value": "'$(cat "${alertlog}" | sed ':a;N;$!ba;s/\n/\\n/g')'"
 		}]
 }';
 
 # Shoot the email
-sendgridsend=$(curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+sendgridsend=$(curl -s -X "POST" "https://api.sendgrid.com/v3/mail/send" \
 		-H "Authorization: Bearer ${sendgridtoken}" \
 		-H "Content-Type: application/json" \
 		-d "${data}")

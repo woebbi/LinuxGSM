@@ -26,11 +26,14 @@ data='{
 
 # Shoot the email
 sendgridsend=$(curl -s -X "POST" "https://api.sendgrid.com/v3/mail/send" \
-		-H "Authorization: Bearer ${sendgridtoken}" \
-		-H "Content-Type: application/json" \
-		-d "${data}")
+	-H "Authorization: Bearer ${sendgridtoken}" \
+	-H "Content-Type: application/json" \
+	-o /dev/null \
+	-w '%{http_code}' \
+	-d "${data}"
+	)
 
-if [ -z "${sendgridsend}" ]; then
+if [ "${sendgridsend}" != "202" ]; then
 	fn_print_fail_nl "Sending Email alert: SendGrid: ${sendgridemail}"
 	fn_script_log_fatal "Sending Email alert: SendGrid: ${sendgridemaill}"
 else

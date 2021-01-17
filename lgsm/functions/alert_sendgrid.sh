@@ -9,7 +9,7 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 fn_print_dots "Sending Email alert: SendGrid: ${sendgridemail}"
 
 # Prepare the recipe
-REQUEST_DATA='{
+data='{
 		"personalizations": [{
 				"to": [{ "email": "'"${sendgridemail}"'" }],
 		}],
@@ -25,10 +25,10 @@ REQUEST_DATA='{
 }';
 
 # Shoot the email
-curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+sendgridsend=$(curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
 		-H "Authorization: Bearer ${sendgridtoken}" \
 		-H "Content-Type: application/json" \
-		-d "$REQUEST_DATA"
+		-d "${data}")
 
 if [ -z "${sendgridsend}" ]; then
 	fn_print_fail_nl "Sending Email alert: SendGrid: ${sendgridemail}"

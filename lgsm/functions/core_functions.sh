@@ -38,6 +38,10 @@ else
 fi
 }
 
+fn_parms(){
+parms="${startparameters}"
+}
+
 core_exit.sh(){
 functionfile="${FUNCNAME[0]}"
 fn_fetch_function
@@ -54,6 +58,11 @@ fn_fetch_function
 }
 
 core_steamcmd.sh(){
+functionfile="${FUNCNAME[0]}"
+fn_fetch_function
+}
+
+core_github.sh(){
 functionfile="${FUNCNAME[0]}"
 fn_fetch_function
 }
@@ -565,6 +574,11 @@ fn_fetch_function
 }
 
 alert_rocketchat.sh(){
+functionfile="${FUNCNAME[0]}"
+fn_fetch_function
+}
+
+alert_sendgrid.sh(){
 functionfile="${FUNCNAME[0]}"
 fn_fetch_function
 }

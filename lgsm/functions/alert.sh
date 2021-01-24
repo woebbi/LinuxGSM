@@ -115,12 +115,6 @@ if [ "${postalert}" == "on" ]&&[ -n "${postalert}" ]; then
 elif [ "${postalert}" != "on" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
 	fn_print_warn_nl "More Info not enabled"
 	fn_script_log_warn "More Info alerts not enabled"
-elif [ -z "${posttarget}" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
-	fn_print_error_nl "posttarget not set"
-	fn_script_error "posttarget not set"
-elif [ -z "${postdays}" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
-	fn_print_error_nl "postdays not set"
-	fn_script_error "postdays not set"
 fi
 
 if [ "${discordalert}" == "on" ]&&[ -n "${discordalert}" ]; then
@@ -186,6 +180,17 @@ elif [ -z "${pushovertoken}" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
 	fn_print_error_nl "Pushover token not set"
 	echo -e "* https://docs.linuxgsm.com/alerts/pushover"
 	fn_script_error "Pushover token not set"
+fi
+
+if [ "${sendgridalert}" == "on" ]&&[ -n "${sendgridalert}" ]; then
+	alert_sendgrid.sh
+elif [ "${sendgridalert}" != "on" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
+	fn_print_warn_nl "SendGrid alerts not enabled"
+	fn_script_log_warn "SendGrid alerts not enabled"
+elif [ -z "${sendgridtoken}" ]&&[ "${commandname}" == "TEST-ALERT" ]; then
+	fn_print_error_nl "SendGrid token not set"
+	echo -e "* https://docs.linuxgsm.com/alerts/sendgrid"
+	fn_script_error "SendGrid token not set"
 fi
 
 if [ "${telegramalert}" == "on" ]&&[ -n "${telegramtoken}" ]; then

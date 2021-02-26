@@ -9,18 +9,18 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_update_minecraft_dl(){
 	# Generate link to version manifest json.
-	remotebuildlink=$(curl -s "https://launchermeta.${remotelocation}/mc/game/version_manifest.json" | jq -r --arg branch ${branch} --arg mcversion ${remotebuild} '.versions | .[] | select(.type==$branch and .id==$mcversion) | .url')
+	remotebuildlink=$(curl -s "${remoteurl}" | jq -r --arg branch ${branch} --arg mcversion ${remotebuild} '.versions | .[] | select(.type==$branch and .id==$mcversion) | .url')
 	# Generate link to server.jar
 	remotebuildurl=$(curl -s "${remotebuildlink}" | jq -r '.downloads.server.url')
 
 	fn_fetch_file "${remotebuildurl}" "" "" "" "${tmpdir}" "minecraft_server.${remotebuild}.jar" "" "norun" "noforce" "nohash"
 	echo -e "copying to ${serverfiles}...\c"
-	cp "${tmpdir}/minecraft_server.${remotebuild}.jar" "${serverfiles}/minecraft_server.jar"
+	cp "${tmpdir}/minecraft_server.${remotebuild}.jar" "${serverfiles}/${executable}"
 	local exitcode=$?
 	if [ "${exitcode}" == "0" ]; then
 		fn_print_ok_eol_nl
 		fn_script_log_pass "Copying to ${serverfiles}"
-		chmod u+x "${serverfiles}/minecraft_server.jar"
+		chmod u+x "${serverfiles}/${executable}"
 		fn_clear_tmp
 	else
 		fn_print_fail_eol_nl
@@ -31,12 +31,12 @@ fn_update_minecraft_dl(){
 }
 
 fn_update_minecraft_localbuild(){
-	# Gets local build info.
+	# Gets local build info from an executable.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses executable to find local build.
 	cd "${executabledir}" || exit
-	if [ -f "minecraft_server.jar" ]; then
-		localbuild=$(unzip -p "minecraft_server.jar" version.json | jq -r '.id')
+	if [ -f "${executable}" ]; then
+		localbuild=$(unzip -p "${executable}" version.json | jq -r '.id')
 		fn_print_ok "Checking local build: ${remotelocation}"
 		fn_script_log_pass "Checking local build"
 	else
@@ -47,16 +47,17 @@ fn_update_minecraft_localbuild(){
 }
 
 fn_update_minecraft_remotebuild(){
-	# Gets remote build info.
+	# Gets remote build info from a json file.
+	remoteurl="https://launchermeta.mojang.com/mc/game/version_manifest.json"
 	# Latest release.
 	if [ "${branch}" == "release" ] && [ "${mcversion}" == "latest" ]; then
-		remotebuild=$(curl -s "https://launchermeta.${remotelocation}/mc/game/version_manifest.json" | jq -r '.latest.release')
+		remotebuild=$(curl -s "${remoteurl}" | jq -r '.latest.release')
 	# Latest snapshot.
 	elif [ "${branch}" == "snapshot" ] && [ "${mcversion}" == "latest" ]; then
-		remotebuild=$(curl -s "https://launchermeta.${remotelocation}/mc/game/version_manifest.json" | jq -r '.latest.snapshot')
+		remotebuild=$(curl -s "${remoteurl}" | jq -r '.latest.snapshot')
 	# Specific release/snapshot.
 	else
-		remotebuild=$(curl -s "https://launchermeta.${remotelocation}/mc/game/version_manifest.json" | jq -r --arg branch ${branch} --arg mcversion ${mcversion} '.versions | .[] | select(.type==$branch and .id==$mcversion) | .id')
+		remotebuild=$(curl -s "${remoteurl}" | jq -r --arg branch ${branch} --arg mcversion ${mcversion} '.versions | .[] | select(.type==$branch and .id==$mcversion) | .id')
 	fi
 
 	if [ "${firstcommandname}" != "INSTALL" ]; then

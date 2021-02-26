@@ -26,24 +26,30 @@ fn_update_factorio_dl(){
 }
 
 fn_update_factorio_localbuild(){
-	# Gets local build info.
+	# Gets local build info from executable.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses executable to find local build.
 	cd "${executabledir}" || exit
 	if [ -f "${executable}" ]; then
 		localbuild=$(${executable} --version | grep "Version:" | awk '{print $2}')
-		fn_print_ok "Checking for update: ${remotelocation}: checking local build"
+		fn_print_ok "Checking local build: ${remotelocation}: checking local build"
 		fn_script_log_pass "Checking local build"
 	else
 		localbuild="0"
-		fn_print_error "Checking for update: ${remotelocation}: checking local build"
+		fn_print_error "Checking local build: ${remotelocation}: checking local build"
 		fn_script_log_error "Checking local build"
 	fi
 }
 
 fn_update_factorio_remotebuild(){
-	# Gets remote build info.
-	remotebuild=$(curl -s "https://factorio.com/get-download/${downloadbranch}/headless/${factorioarch}" | grep -o '[0-9]\.[0-9]\{1,\}\.[0-9]\{1,\}' | head -1)
+	# Gets remote build info from a html file.
+	remoteurl="https://factorio.com/get-download/stable/headless/linux64"
+	# Cache url response
+	remoteurlget=$(curl -sI ${remoteurl})
+	# Remote build number
+	remotebuild=$(echo "${remoteurlget}" | grep -o '[0-9]\.[0-9]\{1,\}\.[0-9]\{1,\}')
+	remotebuildfilename=$(echo "${remoteurlget}" | grep location | sed 's/location: //g')
+	remotebuildfileurl=$(echo "${remoteurlget}" | grep location | sed 's/location: //g')
 	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
 		# Checks if remotebuild variable has been set.

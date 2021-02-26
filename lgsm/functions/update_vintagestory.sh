@@ -8,15 +8,11 @@
 functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_update_vs_dl(){
-	# get version info for download
-	remotebuildresponse=$(curl -s "${apiurl}" | jq --arg version "${remotebuild}" '.[$version].server')
-	remotebuildfile=$(echo -e "${remotebuildresponse}" | jq -r '.filename')
-	remotebuildlink=$(echo -e "${remotebuildresponse}" | jq -r '.urls.cdn')
-	remotebuildmd5=$(echo -e "${remotebuildresponse}" | jq -r '.md5')
+
 
 	# Download and extract files to serverfiles
-	fn_fetch_file "${remotebuildlink}" "" "" "" "${tmpdir}" "${remotebuildfile}" "nochmodx" "norun" "force" "${remotebuildmd5}"
-	fn_dl_extract "${tmpdir}" "${remotebuildfile}" "${serverfiles}"
+	fn_fetch_file "${remotebuildlink}" "" "" "" "${tmpdir}" "${remotebuildfilename}" "nochmodx" "norun" "force" "${remotebuildmd5}"
+	fn_dl_extract "${tmpdir}" "${remotebuildfilename}" "${serverfiles}"
 	fn_clear_tmp
 }
 
@@ -37,11 +33,21 @@ fn_update_vs_localbuild(){
 }
 
 fn_update_vs_remotebuild(){
+	# Gets remote build info from a json file.
+	# TODO: Add support for specific version
+	remoteurl="http://api.vintagestory.at/stable-unstable.json"
+
 	if [ "${branch}" == "stable" ]; then
-		remotebuild=$(curl -s "${apiurl}" | jq -r '[ to_entries[] ] | .[].key' | grep -Ev "\-rc|\-pre" | sort -r -V | head -1)
+		remotebuild=$(curl -s "${remoteurl}" | jq -r '[ to_entries[] ] | .[].key' | grep -Ev "\-rc|\-pre" | sort -r -V | head -1)
 	else
-		remotebuild=$(curl -s "${apiurl}" | jq -r '[ to_entries[] ] | .[].key' | grep -E "\-rc|\-pre" | sort -r -V | head -1)
+		remotebuild=$(curl -s "${remoteurl}" | jq -r '[ to_entries[] ] | .[].key' | grep -E "\-rc|\-pre" | sort -r -V | head -1)
 	fi
+
+	# get version info for download.
+	remotebuildresponse=$(curl -s "${remoteurl}" | jq --arg version "${remotebuild}" '.[$version].server')
+	remotebuildfilename=$(echo -e "${remotebuildresponse}" | jq -r '.filename')
+	remotebuildlink=$(echo -e "${remotebuildresponse}" | jq -r '.urls.cdn')
+	remotebuildmd5=$(echo -e "${remotebuildresponse}" | jq -r '.md5')
 
 	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
@@ -133,7 +139,6 @@ fn_update_vs_compare(){
 
 # The location where the builds are checked and downloaded.
 remotelocation="vintagestory.at"
-apiurl="http://api.${remotelocation}/stable-unstable.json"
 
 if [ "${firstcommandname}" == "INSTALL" ]; then
 	fn_update_vs_remotebuild

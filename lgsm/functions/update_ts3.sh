@@ -9,9 +9,9 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_update_ts3_dl(){
 	if [ "${ts3arch}" == "amd64" ]; then
-		remotebuildurl=$(curl -s 'https://www.teamspeak.com/versions/server.json' | jq -r '.linux.x86_64.mirrors."teamspeak.com"')
+		remotebuildurl=$(curl -s '${remoteurl}' | jq -r '.linux.x86_64.mirrors."teamspeak.com"')
 	elif [ "${ts3arch}" == "x86" ]; then
-		remotebuildurl=$(curl -s 'https://www.teamspeak.com/versions/server.json' | jq -r '.linux.x86.mirrors."teamspeak.com"')
+		remotebuildurl=$(curl -s '${remoteurl}' | jq -r '.linux.x86.mirrors."teamspeak.com"')
 	fi
 	fn_fetch_file "${remotebuildurl}" "" "" "" "${tmpdir}" "teamspeak3-server_linux_${ts3arch}-${remotebuild}.tar.bz2" "" "norun" "noforce" "nohash"
 	fn_dl_extract "${tmpdir}" "teamspeak3-server_linux_${ts3arch}-${remotebuild}.tar.bz2" "${tmpdir}"
@@ -31,7 +31,7 @@ fn_update_ts3_dl(){
 }
 
 fn_update_ts3_localbuild(){
-	# Gets local build info.
+	# Gets local build info from a file.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses log file to gather info.
 	# Gives time for log file to generate.
@@ -102,11 +102,13 @@ fn_update_ts3_localbuild(){
 }
 
 fn_update_ts3_remotebuild(){
-	# Gets remote build info.
+	# Gets remote build info from a json file.
+	remoteurl="https://www.teamspeak.com/versions/server.json"
+
 	if [ "${ts3arch}" == "x86_64" ]; then
-		remotebuild=$(curl -s "https://www.teamspeak.com/versions/server.json" | jq -r '.linux.x86_64.version')
+		remotebuild=$(curl -s "${remoteurl}" | jq -r '.linux.x86_64.version')
 	elif [ "${ts3arch}" == "x86" ]; then
-		remotebuild=$(curl -s "https://www.teamspeak.com/versions/server.json" | jq -r '.linux.x86.version')
+		remotebuild=$(curl -s "${remoteurl}" | jq -r '.linux.x86.version')
 	fi
 	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"

@@ -25,7 +25,7 @@ fn_update_jk2_dl(){
 }
 
 fn_update_jk2_localbuild(){
-	# Gets local build info.
+	# Gets local build info from a file.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses log file to gather info.
 	# Log is generated and cleared on startup but filled on shutdown.
@@ -72,8 +72,9 @@ fn_update_jk2_localbuild(){
 }
 
 fn_update_jk2_remotebuild(){
-	# Gets remote build info.
-	remotebuild=$(curl -s "https://api.github.com/repos/mvdevs/jk2mv/releases/latest" | grep dedicated.zip | tail -1 | awk -F"/" '{ print $8 }')
+	# Gets remote build info from a json file.
+	remoteurl="https://api.github.com/repos/mvdevs/jk2mv/releases/latest"
+	remotebuild=$(curl -s "${remoteurl}" | grep dedicated.zip | tail -1 | awk -F"/" '{ print $8 }')
 	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
 		# Checks if remotebuild variable has been set.
@@ -96,8 +97,8 @@ fn_update_jk2_remotebuild(){
 }
 
 fn_update_jk2_compare(){
-	# Removes dots so if statement can compare version numbers.
 	fn_print_dots "Checking for update: ${remotelocation}"
+	# Removes dots so if statement can compare version numbers.
 	localbuilddigit=$(echo -e "${localbuild}" | tr -cd '[:digit:]')
 	remotebuilddigit=$(echo -e "${remotebuild}" | tr -cd '[:digit:]')
 	if [ "${localbuilddigit}" -ne "${remotebuilddigit}" ]||[ "${forceupdate}" == "1" ]; then

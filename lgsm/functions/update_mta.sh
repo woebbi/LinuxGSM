@@ -27,7 +27,7 @@ fn_update_mta_dl(){
 }
 
 fn_update_mta_localbuild(){
-	# Gets local build info.
+	# Gets local build info from a file.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses log file to gather info.
 	# Gives time for log file to generate.
@@ -98,7 +98,7 @@ fn_update_mta_localbuild(){
 }
 
 fn_update_mta_remotebuild(){
-	# Gets remote build info.
+	# Gets remote build info from a json file.
 	majorversion=$(curl -s https://raw.githubusercontent.com/multitheftauto/mtasa-blue/master/Server/version.h | grep "#define MTASA_VERSION_MAJOR" | awk '{ print $3 }' | sed 's/\r//g')
 	minorversion=$(curl -s https://raw.githubusercontent.com/multitheftauto/mtasa-blue/master/Server/version.h | grep "#define MTASA_VERSION_MINOR" | awk '{ print $3 }' | sed 's/\r//g')
 	maintenanceversion=$(curl -s https://raw.githubusercontent.com/multitheftauto/mtasa-blue/master/Server/version.h | grep "#define MTASA_VERSION_MAINTENANCE" | awk '{ print $3 }' | sed 's/\r//g')

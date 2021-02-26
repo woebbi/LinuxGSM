@@ -26,7 +26,7 @@ fn_update_mumble_dl(){
 }
 
 fn_update_mumble_localbuild(){
-	# Gets local build info.
+	# Gets local build info from an executable.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses executable to find local build.
 	cd "${executabledir}" || exit
@@ -42,8 +42,9 @@ fn_update_mumble_localbuild(){
 }
 
 fn_update_mumble_remotebuild(){
-	# Gets remote build info.
-	remotebuild=$(curl -s "https://api.github.com/repos/mumble-voip/mumble/releases/latest" | grep 'murmur-static_x86.*\.bz2"' | tail -1 | awk -F"/" '{ print $8 }')
+	# Gets remote build info from a json file.
+	remoteurl="https://api.github.com/repos/mumble-voip/mumble/releases/latest"
+	remotebuild=$(curl -s "${remoteurl}" | grep 'murmur-static_x86.*\.bz2"' | tail -1 | awk -F"/" '{ print $8 }')
 	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"
 		# Checks if remotebuild variable has been set.

@@ -138,7 +138,7 @@ fn_check_steamcmd_exec(){
 }
 
 fn_update_steamcmd_localbuild(){
-	# Gets local build info.
+	# Gets local build info from a file.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	fn_appmanifest_check
 	# Uses appmanifest to find local build.
@@ -161,7 +161,7 @@ fn_update_steamcmd_localbuild(){
 }
 
 fn_update_steamcmd_remotebuild(){
-	# Gets remote build info.
+	# Gets remote build info from an executable.
 	if [ -d "${steamcmddir}" ]; then
 		cd "${steamcmddir}" || exit
 	fi

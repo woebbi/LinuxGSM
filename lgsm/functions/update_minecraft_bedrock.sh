@@ -31,7 +31,7 @@ fn_update_minecraft_dl(){
 }
 
 fn_update_minecraft_localbuild(){
-	# Gets local build info.
+	# Gets local build info from a file.
 	fn_print_dots "Checking local build: ${remotelocation}"
 	# Uses log file to gather info.
 	# Log is generated and cleared on startup but filled on shutdown.
@@ -78,7 +78,8 @@ fn_update_minecraft_localbuild(){
 }
 
 fn_update_minecraft_remotebuild(){
-	# Gets remote build info.
+	# Gets remote build info from a html file.
+	remoteurl="https://www.minecraft.net/en-us/download/server/bedrock/"
 	remotebuild=$(curl -Ls "https://www.minecraft.net/en-us/download/server/bedrock/" | grep -o 'https://minecraft.azureedge.net/bin-linux/[^"]*' | sed 's/.*\///' | grep -Eo "[.0-9]+[0-9]")
 	if [ "${firstcommandname}" != "INSTALL" ]; then
 		fn_print_dots "Checking remote build: ${remotelocation}"

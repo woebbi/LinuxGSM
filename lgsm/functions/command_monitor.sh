@@ -24,32 +24,53 @@ fn_monitor_check_lockfile(){
 		core_exit.sh
 	fi
 
-	# Fix if lockfile is not unix time or contains letters
-	if [ -f "${lockdir}/${selfname}.lock" ]&&[[ "$(head -n 1 "${lockdir}/${selfname}.lock")" =~ [A-Za-z] ]]; then
-		date '+%s' > "${lockdir}/${selfname}.lock"
-		echo "${version}" >> "${lockdir}/${selfname}.lock"
-		echo "${port}" >> "${lockdir}/${selfname}.lock"
+	# Fix if lockfile is not unix time or contains letters.
+	if [ -f "${lockdir}/${selfname}.lock" ];then
+		if [[ "$(head -n 1 "${lockdir}/${selfname}.lock")" =~ [A-Za-z] ]]; then
+			date '+%s' > "${lockdir}/${selfname}.lock"
+			echo "${version}" >> "${lockdir}/${selfname}.lock"
+			echo "${port}" >> "${lockdir}/${selfname}.lock"
+		fi
 	fi
 }
 
-fn_monitor_check_update(){
-	# Monitor will check if update is already running.
-	if [ "$(pgrep "${selfname} update" | wc -l)" != "0" ]; then
-		fn_print_dots "Checking active updates: "
-		fn_print_checking_eol
-		fn_script_log_info "Checking active updates: CHECKING"
-		fn_print_error_nl "Checking active updates: SteamCMD is currently checking for updates: "
-		fn_print_error_eol
-		fn_script_log_error "Checking active updates: SteamCMD is currently checking for updates: ERROR"
-		core_exit.sh
-	fi
+
+# Check
+fn_monitor_check_running_commands(){
+	check_running_commands_array=( start st stop sp restart r update u validate v force-update fu install i auto-install ai backup b update-lgsm ul debug d)
+	for check_running_command in "${check_running_commands_array[@]}"; do
+		pgrepcommand="$(pgrep -fcx "/bin/bash ./${selfname} ${check_running_command}")"
+		if [ "${pgrepcommand}" != "0" ]; then
+			fn_print_dots "Checking running commands: "
+			fn_print_checking_eol
+			fn_script_log_info "Checking running commands: CHECKING"
+			fn_script_log_info "Checking running commands: ./${selfname} ${check_running_command} is running"
+			fn_script_log_info "Checking running commands: delaying monitor"
+			totalseconds=0
+			for seconds in {1..10}; do
+				prepcommand="$(pgrep -fcx "/bin/bash ./${selfname} ${check_running_command}")"
+				totalseconds=$((totalseconds + 1))
+				fn_print_dots "Checking running commands: ./${selfname} ${check_running_command} is running: ${totalseconds}: DELAY"
+				if [ "${pgrepcommand}" == "0" ]; then
+					break
+				fi
+				if [ "${seconds}" == "10" ]; then
+					fn_print_dots_nl "Checking running commands: ./${selfname} ${check_running_command} is running: ${totalseconds}: "
+					fn_print_fail_eol
+					core_exit.sh
+				fi
+				sleep 0.5
+			done
+		fi
+	done
 }
 
 fn_monitor_check_session(){
 	fn_print_dots "Checking session: "
 	fn_print_checking_eol
 	fn_script_log_info "Checking session: CHECKING"
-	# uses status var from check_status.sh
+	# uses status var from check_status.sh.
+	fn_monitor_check_running_commands
 	if [ "${status}" != "0" ]; then
 		fn_print_ok "Checking session: "
 		fn_print_ok_eol_nl
@@ -113,7 +134,7 @@ for queryattempt in {1..5}; do
 			fn_print_delay_eol_nl
 			fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : ${queryattempt} : DELAY"
 			fn_script_log_info "Query bypassed: ${gameservername} started less than ${querydelay} minutes ago"
-			fn_script_log_info "Server started: $(date -d @$(head -n 1 "${lockdir}/${selfname}.lock"))"
+			fn_script_log_info "Server started: $(date -d @"$(head -n 1 "${lockdir}/${selfname}.lock")")"
 			fn_script_log_info "Current time: $(date)"
 			monitorpass=1
 			core_exit.sh
@@ -232,10 +253,11 @@ info_parms.sh
 
 # query pre-checks
 fn_monitor_check_lockfile
-fn_monitor_check_update
+fn_monitor_check_running_commands
 fn_monitor_check_session
 # Monitor will not continue if session only check.
 if [ "${querymode}" != "1" ]; then
+	fn_monitor_check_running_commands
 	fn_monitor_check_queryport
 
 	# Add a querydelay of 1 min if var missing.

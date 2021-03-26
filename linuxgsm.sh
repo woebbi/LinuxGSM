@@ -1,7 +1,7 @@
 #!/bin/bash
-# Project: Game Server Managers - LinuxGSM
+# Project: Linux Game Server Managers - LinuxGSM
 # Author: Daniel Gibbs
-# License: MIT License, Copyright (c) 2019 Daniel Gibbs
+# License: MIT License, Copyright (c) 2020 Daniel Gibbs
 # Purpose: Linux Game Server Management Script
 # Contributors: https://linuxgsm.com/contrib
 # Documentation: https://docs.linuxgsm.com
@@ -20,28 +20,29 @@ if [ -f ".dev-debug" ]; then
 	set -x
 fi
 
-version="v19.10.2"
+version="v21.2.2"
 shortname="core"
 gameservername="core"
-rootdir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
-servicename="${selfname}"
-lockselfname=".${servicename}.lock"
+commandname="CORE"
+rootdir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+selfname=$(basename "$(readlink -f "${BASH_SOURCE[0]}")")
+sessionname=$(echo "${selfname}" | cut -f1 -d".")
 lgsmdir="${rootdir}/lgsm"
 logdir="${rootdir}/log"
 lgsmlogdir="${logdir}/lgsm"
-steamcmddir="${rootdir}/steamcmd"
+steamcmddir="${HOME}/.steam/steamcmd"
 serverfiles="${rootdir}/serverfiles"
 functionsdir="${lgsmdir}/functions"
-libdir="${lgsmdir}/lib"
 tmpdir="${lgsmdir}/tmp"
 datadir="${lgsmdir}/data"
+lockdir="${lgsmdir}/lock"
 serverlist="${datadir}/serverlist.csv"
 serverlistmenu="${datadir}/serverlistmenu.csv"
 configdir="${lgsmdir}/config-lgsm"
 configdirserver="${configdir}/${gameservername}"
 configdirdefault="${lgsmdir}/config-default"
 userinput="${1}"
+userinput2="${2}"
 
 ## GitHub Branch Select
 # Allows for the use of different function files
@@ -52,7 +53,7 @@ githubbranch="master"
 
 # Core function that is required first.
 core_functions.sh(){
-	functionfile="${FUNCNAME}"
+	functionfile="${FUNCNAME[0]}"
 	fn_bootstrap_fetch_file_github "lgsm/functions" "core_functions.sh" "${functionsdir}" "chmodx" "run" "noforcedl" "nomd5"
 }
 
@@ -60,49 +61,98 @@ core_functions.sh(){
 # Fetches the core functions required before passed off to core_dl.sh.
 fn_bootstrap_fetch_file(){
 	remote_fileurl="${1}"
-	local_filedir="${2}"
-	local_filename="${3}"
-	chmodx="${4:-0}"
-	run="${5:-0}"
-	forcedl="${6:-0}"
-	md5="${7:-0}"
+	remote_fileurl_backup="${2}"
+	remote_fileurl_name="${3}"
+	remote_fileurl_backup_name="${4}"
+	local_filedir="${5}"
+	local_filename="${6}"
+	chmodx="${7:-0}"
+	run="${8:-0}"
+	forcedl="${9:-0}"
+	md5="${10:-0}"
 	# Download file if missing or download forced.
 	if [ ! -f "${local_filedir}/${local_filename}" ]||[ "${forcedl}" == "forcedl" ]; then
-		if [ ! -d "${local_filedir}" ]; then
-			mkdir -p "${local_filedir}"
-		fi
-		# Defines curl path.
-		curlpath=$(command -v curl 2>/dev/null)
-
-		# If curl exists download file.
-		if [ "$(basename "${curlpath}")" == "curl" ]; then
-			# Trap to remove part downloaded files.
-			echo -en "    fetching ${local_filename}...\c"
-			curlcmd=$(${curlpath} -s --fail -L -o "${local_filedir}/${local_filename}" "${remote_fileurl}" 2>&1)
-			local exitcode=$?
-			if [ ${exitcode} -ne 0 ]; then
-				echo -e "FAIL"
-				if [ -f "${lgsmlog}" ]; then
-					echo -e "${remote_fileurl}" | tee -a "${lgsmlog}"
-					echo "${curlcmd}" | tee -a "${lgsmlog}"
-				fi
-				exit 1
-			else
-				echo -e "OK"
-			fi
+		# If backup fileurl exists include it.
+		if [ -n "${remote_fileurl_backup}" ]; then
+			# counter set to 0 to allow second try
+			counter=0
+			remote_fileurls_array=( remote_fileurl remote_fileurl_backup )
 		else
-			echo "[ FAIL ] Curl is not installed"
-			exit 1
+			# counter set to 1 to not allow second try
+			counter=1
+			remote_fileurls_array=( remote_fileurl )
 		fi
-		# Make file chmodx if chmodx is set.
-		if [ "${chmodx}" == "chmodx" ]; then
-			chmod +x "${local_filedir}/${local_filename}"
-		fi
+
+		for remote_fileurl_array in "${remote_fileurls_array[@]}"; do
+			if [ "${remote_fileurl_array}" == "remote_fileurl" ]; then
+				fileurl="${remote_fileurl}"
+				fileurl_name="${remote_fileurl_name}"
+			elif [ "${remote_fileurl_array}" == "remote_fileurl_backup" ]; then
+				fileurl="${remote_fileurl_backup}"
+				fileurl_name="${remote_fileurl_backup_name}"
+			fi
+			counter=$((counter+1))
+			if [ ! -d "${local_filedir}" ]; then
+				mkdir -p "${local_filedir}"
+			fi
+			# Trap will remove part downloaded files if canceled.
+			trap fn_fetch_trap INT
+			# Larger files show a progress bar.
+
+			echo -en "fetching ${fileurl_name} ${local_filename}...\c"
+			curlcmd=$(curl --connect-timeout 10 -s --fail -L -o "${local_filedir}/${local_filename}" "${fileurl}" 2>&1)
+
+			local exitcode=$?
+
+			# Download will fail if downloads a html file.
+			if [ -f "${local_filedir}/${local_filename}" ]; then
+				if [ -n "$(head "${local_filedir}/${local_filename}" | grep "DOCTYPE" )" ]; then
+					rm "${local_filedir:?}/${local_filename:?}"
+					local exitcode=2
+				fi
+			fi
+
+			# On first try will error. On second try will fail.
+			if [ "${exitcode}" != 0 ]; then
+				if [ ${counter} -ge 2 ]; then
+					echo -e "FAIL"
+					if [ -f "${lgsmlog}" ]; then
+						fn_script_log_fatal "Downloading ${local_filename}"
+						fn_script_log_fatal "${fileurl}"
+					fi
+					core_exit.sh
+				else
+					echo -e "ERROR"
+					if [ -f "${lgsmlog}" ]; then
+						fn_script_log_error "Downloading ${local_filename}"
+						fn_script_log_error "${fileurl}"
+					fi
+				fi
+			else
+				echo -en "OK"
+				sleep 0.3
+				echo -en "\033[2K\\r"
+				if [ -f "${lgsmlog}" ]; then
+					fn_script_log_pass "Downloading ${local_filename}"
+				fi
+
+				# Make file executable if chmodx is set.
+				if [ "${chmodx}" == "chmodx" ]; then
+					chmod +x "${local_filedir}/${local_filename}"
+				fi
+
+				# Remove trap.
+				trap - INT
+
+				break
+			fi
+		done
 	fi
 
 	if [ -f "${local_filedir}/${local_filename}" ]; then
-		# Run file if run is set.
+		# Execute file if run is set.
 		if [ "${run}" == "run" ]; then
+			# shellcheck source=/dev/null
 			source "${local_filedir}/${local_filename}"
 		fi
 	fi
@@ -111,9 +161,16 @@ fn_bootstrap_fetch_file(){
 fn_bootstrap_fetch_file_github(){
 	github_file_url_dir="${1}"
 	github_file_url_name="${2}"
-	githuburl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-
-	remote_fileurl="${githuburl}"
+	# If master branch will currently running LinuxGSM version to prevent "version mixing". This is ignored if a fork.
+	if [ "${githubbranch}" == "master" ]&&[ "${githubuser}" == "GameServerManager" ]&&[ "${commandname}" != "UPDATE-LGSM" ]; then
+		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+	else
+		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+	fi
+	remote_fileurl_name="GitHub"
+	remote_fileurl_backup_name="Bitbucket"
 	local_filedir="${3}"
 	local_filename="${github_file_url_name}"
 	chmodx="${4:-0}"
@@ -121,20 +178,19 @@ fn_bootstrap_fetch_file_github(){
 	forcedl="${6:-0}"
 	md5="${7:-0}"
 	# Passes vars to the file download function.
-	fn_bootstrap_fetch_file "${remote_fileurl}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}"
+	fn_bootstrap_fetch_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}"
 }
 
 # Installer menu.
 
 fn_print_center() {
-	columns="$(tput cols)"
-	line="$@"
+	columns=$(tput cols)
+	line="$*"
 	printf "%*s\n" $(( (${#line} + columns) / 2)) "${line}"
 }
 
 fn_print_horizontal(){
-	char="${1:-=}"
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' "${char}"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' "="
 }
 
 # Bash menu.
@@ -149,12 +205,12 @@ fn_install_menu_bash() {
 	fn_print_horizontal
 	menu_options=()
 	while read -r line || [[ -n "${line}" ]]; do
-		var=$(echo "${line}" | awk -F "," '{print $2 " - " $3}')
+		var=$(echo -e "${line}" | awk -F "," '{print $2 " - " $3}')
 		menu_options+=( "${var}" )
 	done < "${options}"
 	menu_options+=( "Cancel" )
 	select option in "${menu_options[@]}"; do
-		if [ -n "${option}" ]&&[ "${option}" != "Cancel" ]; then
+		if [ "${option}" ]&&[ "${option}" != "Cancel" ]; then
 			eval "$resultvar=\"${option/%\ */}\""
 		fi
 		break
@@ -174,8 +230,8 @@ fn_install_menu_whiptail() {
 	IFS=","
 	menu_options=()
 	while read -r line; do
-		key=$(echo "${line}" | awk -F "," '{print $3}')
-		val=$(echo "${line}" | awk -F "," '{print $2}')
+		key=$(echo -e "${line}" | awk -F "," '{print $3}')
+		val=$(echo -e "${line}" | awk -F "," '{print $2}')
 		menu_options+=( "${val//\"}" "${key//\"}" )
 	done < "${options}"
 	OPTION=$(${menucmd} --title "${title}" --menu "${caption}" "${height}" "${width}" "${menuheight}" "${menu_options[@]}" 3>&1 1>&2 2>&3)
@@ -195,7 +251,7 @@ fn_install_menu() {
 	options=$4
 	# Get menu command.
 	for menucmd in whiptail dialog bash; do
-		if [ -x "$(command -v "${menucmd}")" ]; then
+		if [ "$(command -v "${menucmd}")" ]; then
 			menucmd=$(command -v "${menucmd}")
 			break
 		fi
@@ -220,10 +276,10 @@ fn_server_info(){
 
 fn_install_getopt(){
 	userinput="empty"
-	echo "Usage: $0 [option]"
+	echo -e "Usage: $0 [option]"
 	echo -e ""
-	echo "Installer - Linux Game Server Managers - Version ${version}"
-	echo "https://linuxgsm.com"
+	echo -e "Installer - Linux Game Server Managers - Version ${version}"
+	echo -e "https://linuxgsm.com"
 	echo -e ""
 	echo -e "Commands"
 	echo -e "install\t\t| Select server to install."
@@ -237,22 +293,22 @@ fn_install_file(){
 	if [ -e "${local_filename}" ]; then
 		i=2
 	while [ -e "${local_filename}-${i}" ] ; do
-		let i++
+		(( i++ ))
 	done
 		local_filename="${local_filename}-${i}"
 	fi
 	cp -R "${selfname}" "${local_filename}"
 	sed -i -e "s/shortname=\"core\"/shortname=\"${shortname}\"/g" "${local_filename}"
 	sed -i -e "s/gameservername=\"core\"/gameservername=\"${gameservername}\"/g" "${local_filename}"
-	echo "Installed ${gamename} server as ${local_filename}"
-	echo ""
+	echo -e "Installed ${gamename} server as ${local_filename}"
+	echo -e ""
 	if [ ! -d "${serverfiles}" ]; then
-		echo "./${local_filename} install"
+		echo -e "./${local_filename} install"
 	else
-		echo "Remember to check server ports"
-		echo "./${local_filename} details"
+		echo -e "Remember to check server ports"
+		echo -e "./${local_filename} details"
 	fi
-	echo ""
+	echo -e ""
 	exit
 }
 
@@ -260,11 +316,11 @@ fn_install_file(){
 if [ "$(whoami)" == "root" ]; then
 	if [ "${userinput}" == "install" ]||[ "${userinput}" == "auto-install" ]||[ "${userinput}" == "i" ]||[ "${userinput}" == "ai" ]; then
 		if [ "${shortname}" == "core" ]; then
-			echo "[ FAIL ] Do NOT run this script as root!"
+			echo -e "[ FAIL ] Do NOT run this script as root!"
 			exit 1
 		fi
 	elif [ ! -f "${functionsdir}/core_functions.sh" ]||[ ! -f "${functionsdir}/check_root.sh" ]||[ ! -f "${functionsdir}/core_messages.sh" ]; then
-		echo "[ FAIL ] Do NOT run this script as root!"
+		echo -e "[ FAIL ] Do NOT run this script as root!"
 		exit 1
 	else
 		core_functions.sh
@@ -277,35 +333,35 @@ if [ "${shortname}" == "core" ]; then
 	# Download the latest serverlist. This is the complete list of all supported servers.
 	fn_bootstrap_fetch_file_github "lgsm/data" "serverlist.csv" "${datadir}" "nochmodx" "norun" "forcedl" "nomd5"
 	if [ ! -f "${serverlist}" ]; then
-		echo "[ FAIL ] serverlist.csv could not be loaded."
+		echo -e "[ FAIL ] serverlist.csv could not be loaded."
 		exit 1
 	fi
 
 	if [ "${userinput}" == "list" ]||[ "${userinput}" == "l" ]; then
 		{
-			tail -n +2 "${serverlist}" | awk -F "," '{print $2 "\t" $3}'
+			tail -n +1 "${serverlist}" | awk -F "," '{print $2 "\t" $3}'
 		} | column -s $'\t' -t | more
 		exit
 	elif [ "${userinput}" == "install" ]||[ "${userinput}" == "i" ]; then
-		tail -n +2 "${serverlist}" | awk -F "," '{print $1 "," $2 "," $3}' > "${serverlistmenu}"
+		tail -n +1 "${serverlist}" | awk -F "," '{print $1 "," $2 "," $3}' > "${serverlistmenu}"
 		fn_install_menu result "LinuxGSM" "Select game server to install." "${serverlistmenu}"
 		userinput="${result}"
 		fn_server_info
 		if [ "${result}" == "${gameservername}" ]; then
 			fn_install_file
 		elif [ "${result}" == "" ]; then
-			echo "Install canceled"
+			echo -e "Install canceled"
 		else
-			echo "[ FAIL ] menu result does not match gameservername"
-			echo "result: ${result}"
-			echo "gameservername: ${gameservername}"
+			echo -e "[ FAIL ] menu result does not match gameservername"
+			echo -e "result: ${result}"
+			echo -e "gameservername: ${gameservername}"
 		fi
-	elif [ -n "${userinput}" ]; then
+	elif [ "${userinput}" ]; then
 		fn_server_info
 		if [ "${userinput}" == "${gameservername}" ]||[ "${userinput}" == "${gamename}" ]||[ "${userinput}" == "${shortname}" ]; then
 			fn_install_file
 		else
-			echo "[ FAIL ] unknown game server"
+			echo -e "[ FAIL ] unknown game server"
 		fi
 	else
 		fn_install_getopt
@@ -324,10 +380,9 @@ else
 		fi
 		if [ ! -f "${configdirserver}/_default.cfg" ]; then
 			mkdir -p "${configdirserver}"
-			echo -en "    copying _default.cfg...\c"
+			echo -en "copying _default.cfg...\c"
 			cp -R "${configdirdefault}/config-lgsm/${gameservername}/_default.cfg" "${configdirserver}/_default.cfg"
-			exitcode=$?
-			if [ ${exitcode} -ne 0 ]; then
+			if [ $? != 0 ]; then
 				echo -e "FAIL"
 				exit 1
 			else
@@ -336,11 +391,10 @@ else
 		else
 			function_file_diff=$(diff -q "${configdirdefault}/config-lgsm/${gameservername}/_default.cfg" "${configdirserver}/_default.cfg")
 			if [ "${function_file_diff}" != "" ]; then
-				fn_print_warn_nl "_default.cfg has been altered. reloading config."
-				echo -en "    copying _default.cfg...\c"
+				fn_print_warn_nl "_default.cfg has altered. reloading config."
+				echo -en "copying _default.cfg...\c"
 				cp -R "${configdirdefault}/config-lgsm/${gameservername}/_default.cfg" "${configdirserver}/_default.cfg"
-				exitcode=$?
-				if [ ${exitcode} -ne 0 ]; then
+				if [ $? != 0 ]; then
 					echo -e "FAIL"
 					exit 1
 				else
@@ -348,27 +402,107 @@ else
 				fi
 			fi
 		fi
-		source "${configdirserver}/_default.cfg"
-		# Load the common.cfg config. If missing download it.
-		if [ ! -f "${configdirserver}/common.cfg" ]; then
-			fn_fetch_config "lgsm/config-default/config-lgsm" "common-template.cfg" "${configdirserver}" "common.cfg" "${chmodx}" "nochmodx" "norun" "noforcedl" "nomd5"
-			source "${configdirserver}/common.cfg"
-		else
-			source "${configdirserver}/common.cfg"
+	fi
+	# Load the IP details before the first config is loaded.
+	check_ip.sh
+	# Configs have to be loaded twice to allow start startparameters to pick up all vars
+	# shellcheck source=/dev/null
+	source "${configdirserver}/_default.cfg"
+	# Load the common.cfg config. If missing download it.
+	if [ ! -f "${configdirserver}/common.cfg" ]; then
+		fn_fetch_config "lgsm/config-default/config-lgsm" "common-template.cfg" "${configdirserver}" "common.cfg" "${chmodx}" "nochmodx" "norun" "noforcedl" "nomd5"
+		# shellcheck source=/dev/null
+		source "${configdirserver}/common.cfg"
+	else
+		# shellcheck source=/dev/null
+		source "${configdirserver}/common.cfg"
+	fi
+	# Load the secrets-common.cfg config. If missing download it.
+	if [ ! -f "${configdirserver}/secrets-common.cfg" ]; then
+		fn_fetch_config "lgsm/config-default/config-lgsm" "secrets-common-template.cfg" "${configdirserver}" "secrets-common.cfg" "${chmodx}" "nochmodx" "norun" "noforcedl" "nomd5"
+		# shellcheck source=/dev/null
+		source "${configdirserver}/secrets-common.cfg"
+	else
+		# shellcheck source=/dev/null
+		source "${configdirserver}/secrets-common.cfg"
+	fi
+	# Load the instance.cfg config. If missing download it.
+	if [ ! -f "${configdirserver}/${selfname}.cfg" ]; then
+		fn_fetch_config "lgsm/config-default/config-lgsm" "instance-template.cfg" "${configdirserver}" "${selfname}.cfg" "nochmodx" "norun" "noforcedl" "nomd5"
+		# shellcheck source=/dev/null
+		source "${configdirserver}/${selfname}.cfg"
+	else
+		# shellcheck source=/dev/null
+		source "${configdirserver}/${selfname}.cfg"
+	fi
+	# Load the secrets-instance.cfg config. If missing download it.
+	if [ ! -f "${configdirserver}/secrets-${selfname}.cfg" ]; then
+		fn_fetch_config "lgsm/config-default/config-lgsm" "secrets-instance-template.cfg" "${configdirserver}" "secrets-${selfname}.cfg" "nochmodx" "norun" "noforcedl" "nomd5"
+		# shellcheck source=/dev/null
+		source "${configdirserver}/secrets-${selfname}.cfg"
+	else
+		# shellcheck source=/dev/null
+		source "${configdirserver}/secrets-${selfname}.cfg"
+	fi
+
+	# Reloads start parameter to ensure all vars in startparameters are set.
+	# Will reload the last defined startparameter.
+	fn_reload_startparameters(){
+		# reload Wurm config.
+		if [ "${shortname}" == "wurm" ]; then
+			# shellcheck source=/dev/null
+			source "${servercfgfullpath}"
 		fi
-		# Load the instance.cfg config. If missing download it.
-		if [ ! -f "${configdirserver}/${servicename}.cfg" ]; then
-			fn_fetch_config "lgsm/config-default/config-lgsm" "instance-template.cfg" "${configdirserver}" "${servicename}.cfg" "nochmodx" "norun" "noforcedl" "nomd5"
-			source "${configdirserver}/${servicename}.cfg"
-		else
-			source "${configdirserver}/${servicename}.cfg"
+		# reload startparameters.
+		if grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/secrets-${selfname}.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/secrets-${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/${selfname}.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/secrets-common.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/secrets-common.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/common.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/common.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/_default.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/_default.cfg")"
 		fi
 
-		# Load the linuxgsm.sh in to tmpdir. If missing download it.
-		if [ ! -f "${tmpdir}/linuxgsm.sh" ]; then
-			fn_fetch_file_github "" "linuxgsm.sh" "${tmpdir}" "chmodx" "norun" "noforcedl" "nomd5"
+# reload preexecutable.
+		if grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/secrets-${selfname}.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/secrets-${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/${selfname}.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/secrets-common.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/secrets-common.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/common.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/common.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/_default.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/_default.cfg")"
 		fi
+		
+		# For legacy configs that still use parms= 15.03.21
+		if grep -qE "^[[:blank:]]*parms=" "${configdirserver}/secrets-${selfname}.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/secrets-${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/${selfname}.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/secrets-common.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/secrets-common.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/common.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/common.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/_default.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/_default.cfg")"
+		fi
+
+		if [ -n "${parms}" ]; then
+			startparameters="${parms}"
+		fi
+	}
+
+	fn_reload_startparameters
+	# Load the linuxgsm.sh in to tmpdir. If missing download it.
+	if [ ! -f "${tmpdir}/linuxgsm.sh" ]; then
+		fn_fetch_file_github "" "linuxgsm.sh" "${tmpdir}" "chmodx" "norun" "noforcedl" "nomd5"
 	fi
+
 	# Enables ANSI colours from core_messages.sh. Can be disabled with ansi=off.
 	fn_ansi_loader
 	# Prevents running of core_exit.sh for Travis-CI.

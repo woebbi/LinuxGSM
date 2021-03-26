@@ -1,17 +1,16 @@
 #!/bin/bash
-# LinuxGSM alert_discord.sh function
+# LinuxGSM alert_discord.sh module
 # Author: Daniel Gibbs
-# Contributor: faflfama, diamondburned
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Sends Discord alert.
+
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 if ! command -v jq > /dev/null; then
 	fn_print_fail_nl "Sending Discord alert: jq is missing."
 	fn_script_log_fatal "Sending Discord alert: jq is missing."
 fi
-
-escaped_servername="$(echo -n "${servername}" | jq -sRr "@json")"
-escaped_alertbody="$(echo -n "${alertbody}" | jq -sRr "@json")"
 
 json=$(cat <<EOF
 {
@@ -20,13 +19,15 @@ json=$(cat <<EOF
 	"file":"content",
 	"embeds": [{
 		"color": "2067276",
-		"author": {"name": "${alertemoji} ${alertsubject}", "icon_url": "https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/lgsm/data/alert_discord_logo.png"},
-		"title": "",
-		"description": ${escaped_alertbody},
+		"author": {
+			"name": "${alertemoji} ${alertsubject} ${alertemoji}",
+			"icon_url": "https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/lgsm/data/alert_discord_logo.png"
+		},
+		"title": "${servername}",
+		"description": "${alertbody} \n More info: ${alerturl}",
 		"url": "",
 		"type": "content",
 		"thumbnail": {},
-		"footer": {"text": "Hostname: ${HOSTNAME} / More info: ${alerturl}", "icon_url": ""},
 		"fields": [
 			{
 				"name": "Game",
@@ -39,8 +40,8 @@ json=$(cat <<EOF
 				"inline": true
 			},
 			{
-				"name": "Server Name",
-				"value": ${escaped_servername},
+				"name": "Hostname",
+				"value": "${HOSTNAME}",
 				"inline": true
 			}
 		]
@@ -51,7 +52,7 @@ EOF
 
 fn_print_dots "Sending Discord alert"
 
-discordsend=$(${curlpath} -sSL -H "Content-Type: application/json" -X POST -d "$(echo -n "$json" | jq -c .)" "${discordwebhook}")
+discordsend=$(curl --connect-timeout 10 -sSL -H "Content-Type: application/json" -X POST -d "$(echo -n "$json" | jq -c .)" "${discordwebhook}")
 
 if [ -n "${discordsend}" ]; then
 	fn_print_fail_nl "Sending Discord alert: ${discordsend}"

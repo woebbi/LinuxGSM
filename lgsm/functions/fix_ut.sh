@@ -1,14 +1,13 @@
 #!/bin/bash
-# LinuxGSM fix_ut.sh function
-# Author: Alexander Hurd
+# LinuxGSM fix_ut.sh module
+# Author: Daniel Gibbs
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Resolves various issues with Unreal Tournament.
 
-local commandname="FIX"
-local commandaction="Fix"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 #Set Binary Executable
-echo "chmod +x ${executabledir}/${executable}"
+echo -e "chmod +x ${executabledir}/${executable}"
 chmod +x "${executabledir}/${executable}"
 fn_sleep_time

@@ -1,13 +1,13 @@
 #!/bin/bash
-# LinuxGSM check_system_dir.sh function
+# LinuxGSM check_system_dir.sh module
 # Author: Daniel Gibbs
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Checks if systemdir/serverfiles is accessible.
 
-local commandname="CHECK"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-if [ "${function_selfname}" != "command_validate.sh" ]; then
+if [ "${commandname}" != "VALIDATE" ]; then
 	checkdir="${serverfiles}"
 else
 	checkdir="${systemdir}"

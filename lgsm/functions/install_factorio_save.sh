@@ -1,15 +1,15 @@
 #!/bin/bash
-# LinuxGSM install_factorio_save.sh function
-# Author: Kristian Polso
+# LinuxGSM install_factorio_save.sh module
+# Author: Daniel Gibbs
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
-# Description: Creates the initial save file for Factorio
+# Description: Creates the initial save file for Factorio.
 
-local commandname="INSTALL"
-local commandaction="Install"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-echo ""
-echo "Creating initial Factorio savefile"
-echo "================================="
+echo -e ""
+echo -e "${lightyellow}Creating initial Factorio savefile${default}"
+echo -e "================================="
 fn_sleep_time
 check_glibc.sh
 "${executabledir}"/factorio --create "${serverfiles}/save1"

@@ -1,13 +1,14 @@
 #!/bin/bash
-# LinuxGSM command_install.sh function
+# LinuxGSM command_install.sh module
 # Author: Daniel Gibbs
-# Contributor: UltimateByte
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Overall function for the installer.
 
-local commandname="INSTALL"
-local commandaction="Install"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+commandname="INSTALL"
+commandaction="Installing"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+fn_firstcommand_set
 
 check.sh
 if [ "$(whoami)" = "root" ]; then
@@ -23,9 +24,8 @@ else
 		install_server_files.sh
 		install_ut2k4_key.sh
 	elif [ -z "${appid}" ]; then
-		installer=1
 		install_server_files.sh
-	elif [ -n "${appid}" ]; then
+	elif [ "${appid}" ]; then
 		install_steamcmd.sh
 		install_server_files.sh
 	fi
@@ -42,9 +42,11 @@ else
 		install_ts3db.sh
 	elif [ "${shortname}" == "mta" ]; then
 		command_install_resources_mta.sh
+		fn_firstcommand_reset
 	fi
 
 	fix.sh
+	install_stats.sh
 	install_complete.sh
-	core_exit.sh
 fi
+core_exit.sh

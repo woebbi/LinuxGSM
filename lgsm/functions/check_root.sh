@@ -1,14 +1,14 @@
 #!/bin/bash
-# LinuxGSM check_root.sh function
+# LinuxGSM check_root.sh module
 # Author: Daniel Gibbs
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Checks if the user tried to run the script as root.
 
-local commandname="CHECK"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 if [ "$(whoami)" = "root" ]; then
-	if [ "${function_selfname}" != "command_install.sh" ]; then
+	if [ "${commandname}" != "INSTALL" ]; then
 		fn_print_fail_nl "Do NOT run this script as root!"
 		if [ -d "${lgsmlogdir}" ]; then
 			fn_script_log_fatal "${selfname} attempted to run as root."

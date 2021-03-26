@@ -1,12 +1,11 @@
 #!/bin/bash
 # LinuxGSM check_system_requirements.sh
 # Author: Daniel Gibbs
-# Contributor: UltimateByte
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
-# Description: Checks RAM requirements
+# Description: Checks RAM requirements.
 
-local commandname="CHECK"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 info_distro.sh
 
@@ -30,7 +29,7 @@ elif [ "${shortname}" == "arma3" ]; then
 elif [ "${shortname}" == "rust" ]; then
 	ramrequirementmb="4000"
 	ramrequirementgb="4"
-elif [ "${shortname}" == "mc" ]; then
+elif [ "${shortname}" == "mc" ]||[ "${shortname}" == "pmc" ]||[ "${shortname}" == "wmc" ]; then
 	ramrequirementmb="1000"
 	ramrequirementgb="1"
 elif [ "${shortname}" == "pstbs" ]; then
@@ -42,15 +41,18 @@ elif [ "${shortname}" == "ns2" ]||[ "${shortname}" == "ns2c" ]; then
 elif [ "${shortname}" == "st" ]; then
 	ramrequirementmb="1000"
 	ramrequirementgb="1"
+elif [ "${shortname}" == "pvr" ];then
+	ramrequirementmb="2000"
+	ramrequirementgb="2"
 fi
 
 # If the game or engine has a minimum RAM Requirement, compare it to system's available RAM.
-if [ -n "${ramrequirementmb}" ]; then
+if [ "${ramrequirementmb}" ]; then
 	if [ "${physmemtotalmb}" -lt "${ramrequirementmb}" ]; then
 		fn_print_dots "Check RAM"
 		# Warn the user.
 		fn_print_warn_nl "Check RAM: ${ramrequirementgb}G required, ${physmemtotal} available"
-		echo  "	* ${gamename} server may fail to run or experience poor performance."
+		echo "* ${gamename} server may fail to run or experience poor performance."
 		fn_sleep_time
 	fi
 fi

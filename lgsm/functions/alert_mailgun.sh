@@ -1,22 +1,27 @@
 #!/bin/bash
-# LinuxGSM alert_mailgun.sh function
+# LinuxGSM alert_mailgun.sh module
 # Author: Daniel Gibbs
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Sends Mailgun Email alert.
 
-local commandname="ALERT"
-local commandaction="Alert"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+if [ "${mailgunapiregion}" == "eu" ]; then
+	mailgunapiurl="https://api.eu.mailgun.net"
+else
+	mailgunapiurl="https://api.mailgun.net"
+fi
 
 fn_print_dots "Sending Email alert: Mailgun: ${email}"
 
-mailgunsend=$(${curlpath} -s --user "api:${mailguntoken}" \
+mailgunsend=$(curl --connect-timeout 10 -s --user "api:${mailguntoken}" \
 -F from="LinuxGSM <${mailgunemailfrom}>" \
 -F to="LinuxGSM Admin <${mailgunemail}>" \
 -F subject="${alertemoji} ${alertsubject} ${alertemoji}" \
 -F o:tag='alert' \
 -F o:tag='LinuxGSM' \
--F text="$(cat "${alertlog}")" "https://api.mailgun.net/v3/${mailgundomain}/messages")
+-F text="$(cat "${alertlog}")" "${mailgunapiurl}/v3/${mailgundomain}/messages")
 
 if [ -z "${mailgunsend}" ]; then
 	fn_print_fail_nl "Sending Email alert: Mailgun: ${email}"

@@ -1,11 +1,10 @@
 #!/bin/bash
-# LinuxGSM fix_terraria.sh function
+# LinuxGSM fix_terraria.sh module
 # Author: Daniel Gibbs
+# Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
 # Description: Resolves an issue with Terraria.
 
-local commandname="FIX"
-local commandaction="Fix"
-local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 export TERM=xterm

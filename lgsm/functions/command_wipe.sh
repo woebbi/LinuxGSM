@@ -38,7 +38,7 @@ fn_wipe_server_files(){
 		else
 			echo -e "no *.map file(s) to remove"
 			fn_sleep_time
-			fn_script_log_pass "no *.map file(s) to remove"
+			fn_script_log_pass "no .map file(s) to remove"
 		fi
 	fi
 	# Remove Save files.
@@ -120,7 +120,7 @@ fn_server_wipe_warning(){
 
 # Will change the seed everytime the wipe is run, if the seed is not defined by the user.
 fn_wipe_random_seed(){
-	if [ -f "${datadir}/${selfname}-seed.txt" ]; then
+	if [ -f "${datadir}/${selfname}-seed.txt" ]&&[ -n "${serverwipe}" ]||[ -n "${mapwipe}" ]; then
 		shuf -i 1-2147483647 -n 1 > "${datadir}/${selfname}-seed.txt"
 		seed=$(cat "${datadir}/${selfname}-seed.txt")
 		echo -en "generating new random seed (${cyan}${seed}${default})..."
@@ -147,7 +147,7 @@ fn_wipe_details(){
 	fi
 
 	echo -en "* Change seed: "
-	if [ -n "${randomseed}" ]; then
+	if [ -n "${randomseed}" ]&&[ -n "${serverwipe}" ]||[ -n "${mapwipe}" ]; then
 		fn_print_yes_eol_nl
 	else
 		fn_print_no_eol_nl

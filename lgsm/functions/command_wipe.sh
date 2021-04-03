@@ -23,39 +23,41 @@ fn_wipe_exit_code(){
 
 # Removes files to wipe server.
 fn_wipe_server_files(){
-	fn_print_start_nl "Wiping server"
-	fn_script_log_info "Wiping server"
+	fn_print_start_nl "${wipetype}"
+	fn_script_log_info "${wipetype}"
 
 	# Remove Map files
-	if [ -n "$(find "${serveridentitydir}" -type f -name "*.map")" ]; then
-		echo -en "removing *.map file(s)..."
-		fn_script_log_info "removing *.map file(s)"
-		fn_sleep_time
-		find "${serveridentitydir:?}" -type f -name "*.map" -printf "%f\n" >>  "${lgsmlog}"
-		find "${serveridentitydir:?}" -type f -name "*.map" -delete | tee -a "${lgsmlog}"
-		fn_wipe_exit_code
-	else
-		echo -e "no *.map file(s) to remove"
-		fn_sleep_time
-		fn_script_log_pass "no *.map file(s) to remove"
+	if [ -n "${serverwipe}" ]||[ -n "${mapwipe}" ]; then
+		if [ -n "$(find "${serveridentitydir}" -type f -name "*.map")" ]; then
+			echo -en "removing .map file(s)..."
+			fn_script_log_info "removing *.map file(s)"
+			fn_sleep_time
+			find "${serveridentitydir:?}" -type f -name "*.map" -printf "%f\n" >>  "${lgsmlog}"
+			find "${serveridentitydir:?}" -type f -name "*.map" -delete | tee -a "${lgsmlog}"
+			fn_wipe_exit_code
+		else
+			echo -e "no *.map file(s) to remove"
+			fn_sleep_time
+			fn_script_log_pass "no *.map file(s) to remove"
+		fi
 	fi
-
 	# Remove Save files.
-	if [ -n "$(find "${serveridentitydir}" -type f -name "*.sav*")" ]; then
-		echo -en "removing .sav file(s)..."
-		fn_script_log_info "removing .sav file(s)"
-		fn_sleep_time
-		find "${serveridentitydir:?}" -type f -name "*.sav*" -printf "%f\n" >>  "${lgsmlog}"
-		find "${serveridentitydir:?}" -type f -name "*.sav*" -delete
-		fn_wipe_exit_code
-	else
-		echo -e "no .sav file(s) to remove"
-		fn_script_log_pass "no .sav file(s) to remove"
-		fn_sleep_time
+	if [ -n "${serverwipe}" ]||[ -n "${mapwipe}" ]; then
+		if [ -n "$(find "${serveridentitydir}" -type f -name "*.sav*")" ]; then
+			echo -en "removing .sav file(s)..."
+			fn_script_log_info "removing .sav file(s)"
+			fn_sleep_time
+			find "${serveridentitydir:?}" -type f -name "*.sav*" -printf "%f\n" >>  "${lgsmlog}"
+			find "${serveridentitydir:?}" -type f -name "*.sav*" -delete
+			fn_wipe_exit_code
+		else
+			echo -e "no .sav file(s) to remove"
+			fn_script_log_pass "no .sav file(s) to remove"
+			fn_sleep_time
+		fi
 	fi
-
 	# Remove db files for full wipe.
-	if [ -n "${fullwipe}" ]; then
+	if [ -n "${serverwipe}" ]||[ -n "${playerwipe}" ]; then
 		if [ -n "$(find "${serveridentitydir}" -type f -name "*.db")" ]; then
 			echo -en "removing .db file(s)..."
 			fn_script_log_info "removing .db file(s)"
@@ -71,34 +73,49 @@ fn_wipe_server_files(){
 	fi
 }
 
-fn_wipe_warning(){
-	fn_print_warn "Wipe will reset the map and keep player data"
-	fn_script_log_warn "Wipe will reset the map and keep player data"
+fn_map_wipe_warning(){
+	fn_print_warn "Map wipe will reset the map data and keep player data"
+	fn_script_log_warn "Map wipe will reset the map data and keep player data"
 	totalseconds=3
 	for seconds in {3..1}; do
-		fn_print_warn "Wipe will reset the map and keep player data: ${totalseconds}"
+		fn_print_warn "Map wipe will reset the map data and keep player data: ${totalseconds}"
 		totalseconds=$((totalseconds - 1))
 		sleep 1
 		if [ "${seconds}" == "0" ]; then
 			break
 		fi
 	done
-	fn_print_warn_nl "Wipe will reset the map and keep player data"
+	fn_print_warn_nl "Map wipe will reset the map data and keep player data"
 }
 
-fn_full_wipe_warning(){
-	fn_print_warn "Full wipe will reset the map and remove player data"
-	fn_script_log_warn "Full wipe will reset the map and remove player data"
+fn_player_wipe_warning(){
+	fn_print_warn "Player wipe will keep the map data and remove player data"
+	fn_script_log_warn "Player wipe will keep the map data and remove player data"
 	totalseconds=3
 	for seconds in {3..1}; do
-		fn_print_warn "Full wipe will reset the map and remove player data: ${totalseconds}"
+		fn_print_warn "Player wipe will keep the map data and remove player data: ${totalseconds}"
 		totalseconds=$((totalseconds - 1))
 		sleep 1
 		if [ "${seconds}" == "0" ]; then
 			break
 		fi
 	done
-	fn_print_warn_nl "Full wipe will reset the map and remove player data"
+	fn_print_warn_nl "Player wipe will keep the map data and remove player data"
+}
+
+fn_server_wipe_warning(){
+	fn_print_warn "Server wipe will reset the map data and remove player data"
+	fn_script_log_warn "Server wipe will reset the map data and remove player data"
+	totalseconds=3
+	for seconds in {3..1}; do
+		fn_print_warn "Server wipe will reset the map data and remove player data: ${totalseconds}"
+		totalseconds=$((totalseconds - 1))
+		sleep 1
+		if [ "${seconds}" == "0" ]; then
+			break
+		fi
+	done
+	fn_print_warn_nl "Server wipe will reset the map data and remove player data"
 }
 
 # Will change the seed everytime the wipe is run, if the seed is not defined by the user.
@@ -113,15 +130,47 @@ fn_wipe_random_seed(){
 	fi
 }
 
+# Summary of what wipe is going to do
+fn_wipe_details(){
+	echo -en "* Wipe map data: "
+	if [ -n "${serverwipe}" ]||[ -n "${mapwipe}" ]; then
+		fn_print_yes_eol_nl
+	else
+		fn_print_no_eol_nl
+	fi
+
+	echo -en "* Wipe player data: "
+	if [ -n "${serverwipe}" ]||[ -n "${playerwipe}" ]; then
+		fn_print_yes_eol_nl
+	else
+		fn_print_no_eol_nl
+	fi
+
+	echo -en "* Change seed: "
+	if [ -n "${randomseed}" ]; then
+		fn_print_yes_eol_nl
+	else
+		fn_print_no_eol_nl
+	fi
+}
+
 fn_print_dots ""
 check.sh
 
 # Check if there is something to wipe.
 if [ -n "$(find "${serveridentitydir}" -type f -name "*.sav*")" ]||[ -n "$(find "${serveridentitydir}" -type f -name "Log.*.txt")" ]||[ -n "$(find "${serveridentitydir}" -type f -name "*.db")" ]; then
-	if [ -n "${fullwipe}" ]; then
-		fn_full_wipe_warning
-	else
-		fn_wipe_warning
+	if [ -n "${serverwipe}" ]; then
+		wipetype="Server wipe"
+		fn_server_wipe_warning
+		fn_wipe_details
+	elif [ -n "${mapwipe}" ]; then
+		wipetype="Map wipe"
+		fn_map_wipe_warning
+		fn_wipe_details
+	elif [ -n "${playerwipe}" ]; then
+		wipetype="Player wipe"
+		fn_player_wipe_warning
+		fn_wipe_details
 	fi
 	check_status.sh
 	if [ "${status}" != "0" ]; then
@@ -131,16 +180,16 @@ if [ -n "$(find "${serveridentitydir}" -type f -name "*.sav*")" ]||[ -n "$(find 
 		fn_firstcommand_reset
 		fn_wipe_server_files
 		fn_wipe_random_seed
-		fn_print_complete_nl "Wiping ${selfname}"
-		fn_script_log_pass "Wiping ${selfname}"
+		fn_print_complete_nl "${wipetype}"
+		fn_script_log_pass "${wipetype}"
 		exitbypass=1
 		command_start.sh
 		fn_firstcommand_reset
 	else
 		fn_wipe_server_files
 		fn_wipe_random_seed
-		fn_print_complete_nl "Wiping ${selfname}"
-		fn_script_log_pass "Wiping ${selfname}"
+		fn_print_complete_nl "${wipetype}"
+		fn_script_log_pass "${wipetype}"
 	fi
 else
 	fn_print_ok_nl "Wipe not required"

@@ -152,6 +152,7 @@ fn_info_parms_rust(){
 			shuf -i 1-2147483647 -n 1 > "${datadir}/${selfname}-seed.txt"
 		fi
 		seed="$(cat "${datadir}/${selfname}-seed.txt")"
+		randomseed=1
 	fi
 }
 

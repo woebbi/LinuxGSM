@@ -57,13 +57,14 @@ fn_wipe_server_files(){
 		fi
 	fi
 	# Remove db files for full wipe.
+	# Excluding player.tokens.db for Rust+.
 	if [ -n "${serverwipe}" ]||[ -n "${playerwipe}" ]; then
 		if [ -n "$(find "${serveridentitydir}" -type f -name "*.db")" ]; then
 			echo -en "removing .db file(s)..."
 			fn_script_log_info "removing .db file(s)"
 			fn_sleep_time
-			find "${serveridentitydir:?}" -type f -name "*.db" -printf "%f\n" >> "${lgsmlog}"
-			find "${serveridentitydir:?}" -type f -name "*.db" -delete
+			find "${serveridentitydir:?}" -type f ! -name 'player.tokens.db' -name "*.db" -printf "%f\n" >> "${lgsmlog}"
+			find "${serveridentitydir:?}" -type f ! -name 'player.tokens.db' -name "*.db" -delete
 			fn_wipe_exit_code
 		else
 			echo -e "no .db file(s) to remove"
@@ -132,6 +133,7 @@ fn_wipe_random_seed(){
 
 # Summary of what wipe is going to do
 fn_wipe_details(){
+	fn_print_information_nl "Wipe doe not remove Rust+ data."
 	echo -en "* Wipe map data: "
 	if [ -n "${serverwipe}" ]||[ -n "${mapwipe}" ]; then
 		fn_print_yes_eol_nl

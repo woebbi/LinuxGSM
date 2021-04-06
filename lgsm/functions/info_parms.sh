@@ -145,6 +145,7 @@ fn_info_parms_rust(){
 	saveinterval=${saveinterval:-"0"}
 	serverlevel=${serverlevel:-"NOT SET"}
 	worldsize=${worldsize:-"0"}
+<<<<<<< HEAD
 	# Part of random seed feature.
 	# If seed is not defined by user generate a seed file.
 	if [ -z "${seed}" ]; then
@@ -154,6 +155,8 @@ fn_info_parms_rust(){
 		seed="$(cat "${datadir}/${selfname}-seed.txt")"
 		randomseed=1
 	fi
+=======
+>>>>>>> master
 }
 
 fn_info_parms_samp(){

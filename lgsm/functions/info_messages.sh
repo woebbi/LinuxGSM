@@ -262,7 +262,11 @@ fn_info_message_gameserver(){
 			echo -e "${lightblue}Beta Password:\t${default}${betapassword}"
 		fi
 
+<<<<<<< HEAD
 		# Bots
+=======
+		# Server Version
+>>>>>>> master
 		if [ -n "${gdversion}" ]; then
 			echo -e "${lightblue}Server Version:\t${default}${gdversion}"
 		fi

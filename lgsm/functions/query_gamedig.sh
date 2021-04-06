@@ -46,7 +46,7 @@ if [ "$(command -v gamedig 2>/dev/null)" ]&&[ "$(command -v jq 2>/dev/null)" ]; 
 		# maxplayers.
 		gdmaxplayers=$(echo "${gamedigraw}" | jq -re '.maxplayers')
 		if [ "${gdmaxplayers}" == "null" ]; then
-			unset maxplayers
+			unset gdmaxplayers
 		elif [ "${gdmaxplayers}" == "[]" ]; then
 			gdmaxplayers=0
 		fi

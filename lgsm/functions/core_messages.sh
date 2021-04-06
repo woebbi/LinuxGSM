@@ -375,7 +375,11 @@ fn_prompt_message(){
 # On-Screen End of Line
 ##################################
 
+<<<<<<< HEAD
 # YES/NO
+=======
+# YES
+>>>>>>> master
 fn_print_yes_eol(){
 	echo -en "${cyan}YES${default}"
 	fn_sleep_time

@@ -15,15 +15,13 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - uses: FranzDiebold/github-env-vars-action@v1.2.0
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
     - run: npm install gamedig -g
     # Runs a single command using the runners shell
     - name: linuxgsm.sh pre-test setup
-      run: |
-        rm -rf lgsm/*
+      run: chmod +x lgsm/functions/*
     - name: ./linuxgsm.sh (get-opt)
       run: bash ./linuxgsm.sh
     - name: ./linuxgsm.sh list

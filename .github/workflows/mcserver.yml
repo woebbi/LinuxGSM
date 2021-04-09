@@ -57,9 +57,6 @@ jobs:
     - name: ./mcserver update (update required - online)
       run: |
         bash ./mcserver update
-      run: |
-        bash ./mcserver start
-        bash ./mcserver update
     - name: Simulate out-of-date modules
       run: |
         echo "#test" >> lgsm/tmp/linuxgsm.sh

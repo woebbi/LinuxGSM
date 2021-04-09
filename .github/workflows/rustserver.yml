@@ -17,7 +17,9 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v2
+      with:
+          node-version: '14'
     - run: npm install gamedig -g
     # Runs a single command using the runners shell
     - name: linuxgsm.sh pre-test setup
@@ -35,6 +37,9 @@ jobs:
     # Install
     - name: ./rustserver auto-install
       run: bash ./rustserver auto-install
+    # Speed up messages
+    - name: Speed up message display
+      run: echo "sleeptime=\"0.1\"" > lgsm/config-lgsm/rustserver/common.cfg
     # Start. Stop, Restart
     - name: ./rustserver start
       run: bash ./rustserver start
@@ -53,11 +58,6 @@ jobs:
       run: |
         sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_258550.acf"
         bash ./rustserver update
-    - name: ./rustserver update (update required - offline)
-      run: |
-        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_258550.acf"
-        bash ./rustserver stop
-        bash ./rustserver update
     - name: ./rustserver update (remove appmanifest file)
       run: |
         rm --verbose "serverfiles/steamapps/appmanifest_258550.acf"
@@ -70,7 +70,43 @@ jobs:
         bash ./rustserver update
     - name: ./rustserver validate (online)
       run: bash ./rustserver validate
-    - name: ./rustserver validate (offline)
+    - name: Simulate out-of-date modules
       run: |
-        bash ./rustserver stop
-        bash ./rustserver validate
+        echo "#test" >> lgsm/tmp/linuxgsm.sh
+        echo "#test" >> lgsm/config-default/config-lgsm/rustserver/_default.cfg
+        echo "#test" >> lgsm/functions/alert.sh
+    - name: ./rustserver update-lgsm
+      run: bash ./rustserver update-lgsm
+    # monitor
+    - name: ./rustserver monitor (offline)
+      run: bash .github/exitcode.sh "./rustserver monitor" "2"
+    - name: ./rustserver monitor (offline with lockfile)
+      run: |
+        date '+%s' > "lgsm/lock/rustserver.lock"
+        bash ./rustserver monitor
+    - name: ./rustserver monitor (online)
+      run: |
+        bash ./rustserver monitor
+    - name: ./rustserver test-alert
+      run: |
+        bash .github/exitcode.sh "./rustserver test-alert" "3"
+    # details
+    - name: ./rustserver details
+      run: bash ./rustserver details
+    - name: ./rustserver postdetails
+      run: bash ./rustserver postdetails
+    # Backup
+    - name: ./rustserver backup
+      run: bash ./rustserver backup
+    # Dev Tools
+    - name: ./rustserver detect-glibc
+      run: bash ./rustserver detect-glibc
+    - name: ./rustserver detect-ldd
+      run: bash ./rustserver detect-ldd
+    - name: ./rustserver detect-deps
+      run: bash ./rustserver detect-deps
+    - name: ./rustserver query-raw
+      run: bash ./rustserver query-raw
+    # Donate
+    - name: ./rustserver donate
+      run: bash ./rustserver donate

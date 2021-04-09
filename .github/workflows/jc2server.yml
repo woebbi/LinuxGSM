@@ -58,11 +58,6 @@ jobs:
       run: |
         sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_261140.acf"
         bash ./jc2server update
-    - name: ./jc2server update (update required - offline)
-      run: |
-        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_261140.acf"
-        bash ./jc2server stop
-        bash ./jc2server update
     - name: ./jc2server update (remove appmanifest file)
       run: |
         rm --verbose "serverfiles/steamapps/appmanifest_261140.acf"
@@ -75,10 +70,6 @@ jobs:
         bash ./jc2server update
     - name: ./jc2server validate (online)
       run: bash ./jc2server validate
-    - name: ./jc2server validate (offline)
-      run: |
-        bash ./jc2server stop
-        bash ./jc2server validate
     - name: Simulate out-of-date modules
       run: |
         echo "#test" >> lgsm/tmp/linuxgsm.sh

@@ -57,10 +57,6 @@ jobs:
     - name: ./mcserver update (update required - online)
       run: |
         bash ./mcserver update
-    - name: ./mcserver update (update required - offline)
-      run: |
-        bash ./mcserver stop
-        bash ./mcserver update
     - name: ./mcserver force-update (offline)
       run: bash ./mcserver force-update
     - name: ./mcserver force-update (online)

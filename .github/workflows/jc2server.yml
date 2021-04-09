@@ -75,7 +75,9 @@ jobs:
       run: bash ./jc2server update-lgsm
     # monitor
     - name: ./jc2server monitor (offline)
-      run: bash .github/exitcode.sh "./jc2server monitor" "2"
+      run: |
+        run: bash ./jc2server stop
+        bash .github/exitcode.sh "./jc2server monitor" "2"
     - name: ./jc2server monitor (offline with lockfile)
       run: |
         date '+%s' > "lgsm/lock/jc2server.lock"

@@ -51,11 +51,11 @@ jobs:
       run: bash ./rustserver update
     - name: ./rustserver update (update required - online)
       run: |
-        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_261140.acf"
+        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_258550.acf"
         bash ./rustserver update
     - name: ./rustserver update (update required - offline)
       run: |
-        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_261140.acf"
+        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_258550.acf"
         bash ./rustserver stop
         bash ./rustserver update
     - name: ./rustserver update (remove appmanifest file)

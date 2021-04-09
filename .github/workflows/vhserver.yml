@@ -1,0 +1,119 @@
+# This is a basic workflow to help you get started with Actions
+
+name: vhserver
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: push
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - run: npm install gamedig -g
+    # Runs a single command using the runners shell
+    - name: linuxgsm.sh pre-test setup
+      run: chmod +x lgsm/functions/*
+    - name: ./linuxgsm.sh (get-opt)
+      run: bash ./linuxgsm.sh
+    - name: ./linuxgsm.sh list
+      run: bash ./linuxgsm.sh list
+    - name: ./linuxgsm.sh vhserver
+      run: bash ./linuxgsm.sh vhserver
+    - name: ./vhserver (get-opt)
+      run: bash ./vhserver
+    - name: ./vhserver dev
+      run: bash ./vhserver dev
+    # Install
+    - name: ./vhserver auto-install
+      run: bash ./vhserver auto-install
+    # Speed up messages
+    - name: Speed up message display
+      run: echo "sleeptime=\"0.1\"" > lgsm/config-lgsm/vhserver/common.cfg
+    # Start. Stop, Restart
+    - name: ./vhserver start (no ip set)
+      run: bash ./vhserver start
+    - name: ./vhserver start (already online)
+      run: bash .github/exitcode.sh "./vhserver start" "2"
+    - name: ./vhserver restart
+      run: bash ./vhserver restart
+    - name: ./vhserver stop
+      run: bash ./vhserver stop
+    - name: ./vhserver restart (server offline)
+      run: bash ./vhserver restart
+    # update
+    - name: ./vhserver update (no update required)
+      run: bash ./vhserver update
+    - name: ./vhserver update (update required - online)
+      run: |
+        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_896660.acf"
+        bash ./vhserver update
+    - name: ./vhserver update (update required - offline)
+      run: |
+        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_896660.acf"
+        bash ./vhserver stop
+        bash ./vhserver update
+    - name: ./vhserver update (remove appmanifest file)
+      run: |
+        rm --verbose "serverfiles/steamapps/appmanifest_896660.acf"
+        bash ./vhserver update
+    - name: ./vhserver force-update (offline)
+      run: bash ./vhserver force-update
+    - name: ./vhserver force-update (online)
+      run: |
+        bash ./vhserver start
+        bash ./vhserver update
+    - name: ./vhserver validate (online)
+      run: bash ./vhserver validate
+    - name: ./vhserver validate (offline)
+      run: |
+        bash ./vhserver stop
+        bash ./vhserver validate
+    - name: Simulate out-of-date modules
+      run: |
+        echo "#test" >> lgsm/tmp/linuxgsm.sh
+        echo "#test" >> lgsm/config-default/config-lgsm/vhserver/_default.cfg
+        echo "#test" >> lgsm/functions/alert.sh
+    - name: ./vhserver update-lgsm
+      run: bash ./vhserver update-lgsm
+    # monitor
+    - name: ./vhserver monitor (offline)
+      run: bash .github/exitcode.sh "./vhserver monitor" "2"
+    - name: ./vhserver monitor (offline with lockfile)
+      run: |
+        date '+%s' > "lgsm/lock/vhserver.lock"
+        bash ./vhserver monitor
+    - name: ./vhserver monitor (online)
+      run: |
+        bash ./vhserver monitor
+    - name: ./vhserver test-alert
+      run: |
+        bash .github/exitcode.sh "./vhserver test-alert" "3"
+    # details
+    - name: ./vhserver details
+      run: bash ./vhserver details
+    - name: ./vhserver post-details
+      run: bash ./vhserver post-details
+    # Backup
+    - name: ./vhserver backup
+      run: bash ./vhserver backup
+    # Dev Tools
+    - name: ./vhserver detect-glibc
+      run: bash ./vhserver detect-glibc
+    - name: ./vhserver detect-ldd
+      run: bash ./vhserver detect-ldd
+    - name: ./vhserver detect-deps
+      run: bash ./vhserver detect-deps
+    - name: ./vhserver query-raw
+      run: bash ./vhserver query-raw
+    # Donate
+    - name: ./vhserver donate
+      run: bash ./vhserver donate

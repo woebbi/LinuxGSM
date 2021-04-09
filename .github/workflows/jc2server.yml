@@ -105,3 +105,15 @@ jobs:
     # Backup
     - name: ./jc2server backup
       run: bash ./jc2server backup
+    # Dev Tools
+    - name: ./jc2server detect-glibc
+      run: bash ./jc2server detect-glibc
+    - name: ./jc2server detect-ldd
+      run: bash ./jc2server detect-ldd
+    - name: ./jc2server detect-deps
+      run: bash ./jc2server detect-deps
+    - name: ./jc2server query-raw
+      run: bash ./jc2server query-raw
+    # Donate
+    - name: ./jc2server donate
+      run: bash ./jc2server donate

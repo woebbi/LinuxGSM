@@ -75,7 +75,9 @@ jobs:
       run: bash ./rustserver update-lgsm
     # monitor
     - name: ./rustserver monitor (offline)
-      run: bash .github/exitcode.sh "./rustserver monitor" "2"
+      run: |
+        bash ./rustserver stop
+        bash .github/exitcode.sh "./rustserver monitor" "2"
     - name: ./rustserver monitor (offline with lockfile)
       run: |
         date '+%s' > "lgsm/lock/rustserver.lock"

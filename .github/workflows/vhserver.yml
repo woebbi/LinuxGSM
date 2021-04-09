@@ -60,21 +60,12 @@ jobs:
         bash ./vhserver update
     - name: ./vhserver update (update required - offline)
       run: |
-        sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_896660.acf"
-        bash ./vhserver stop
-        bash ./vhserver update
-    - name: ./vhserver update (remove appmanifest file)
-      run: |
         rm --verbose "serverfiles/steamapps/appmanifest_896660.acf"
         bash ./vhserver update
     - name: ./vhserver force-update (online)
       run: bash ./vhserver force-update
     - name: ./vhserver validate (online)
       run: bash ./vhserver validate
-    - name: ./vhserver validate (offline)
-      run: |
-        bash ./vhserver stop
-        bash ./vhserver validate
     - name: Simulate out-of-date modules
       run: |
         echo "#test" >> lgsm/tmp/linuxgsm.sh
@@ -84,6 +75,7 @@ jobs:
       run: bash ./vhserver update-lgsm
     # monitor
     - name: ./vhserver monitor (offline)
+        run: bash ./vhserver stop
       run: bash .github/exitcode.sh "./vhserver monitor" "2"
     - name: ./vhserver monitor (offline with lockfile)
       run: |

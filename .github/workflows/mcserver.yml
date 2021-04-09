@@ -67,12 +67,6 @@ jobs:
       run: |
         bash ./mcserver start
         bash ./mcserver update
-    - name: ./mcserver validate (online)
-      run: bash ./mcserver validate
-    - name: ./mcserver validate (offline)
-      run: |
-        bash ./mcserver stop
-        bash ./mcserver validate
     - name: Simulate out-of-date modules
       run: |
         echo "#test" >> lgsm/tmp/linuxgsm.sh

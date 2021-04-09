@@ -63,9 +63,7 @@ jobs:
         rm --verbose "serverfiles/steamapps/appmanifest_261140.acf"
         bash ./jc2server update
     - name: ./jc2server force-update (online)
-      run: |
-        bash ./jc2server start
-        bash ./jc2server update
+      run: bash ./jc2server force-update
     - name: ./jc2server validate (online)
       run: bash ./jc2server validate
     - name: Simulate out-of-date modules

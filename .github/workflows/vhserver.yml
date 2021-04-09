@@ -68,9 +68,7 @@ jobs:
         rm --verbose "serverfiles/steamapps/appmanifest_896660.acf"
         bash ./vhserver update
     - name: ./vhserver force-update (online)
-      run: |
-        bash ./vhserver start
-        bash ./vhserver update
+      run: bash ./vhserver force-update
     - name: ./vhserver validate (online)
       run: bash ./vhserver validate
     - name: ./vhserver validate (offline)

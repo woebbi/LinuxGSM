@@ -63,9 +63,7 @@ jobs:
         rm --verbose "serverfiles/steamapps/appmanifest_258550.acf"
         bash ./rustserver update
     - name: ./rustserver force-update (online)
-      run: |
-        bash ./rustserver start
-        bash ./rustserver update
+      run: bash ./rustserver force-update
     - name: ./rustserver validate (online)
       run: bash ./rustserver validate
     - name: Simulate out-of-date modules

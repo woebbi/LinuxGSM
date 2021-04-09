@@ -75,8 +75,9 @@ jobs:
       run: bash ./vhserver update-lgsm
     # monitor
     - name: ./vhserver monitor (offline)
-        run: bash ./vhserver stop
-      run: bash .github/exitcode.sh "./vhserver monitor" "2"
+      run: |
+        bash ./vhserver stop
+        bash .github/exitcode.sh "./vhserver monitor" "2"
     - name: ./vhserver monitor (offline with lockfile)
       run: |
         date '+%s' > "lgsm/lock/vhserver.lock"

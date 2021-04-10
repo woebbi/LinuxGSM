@@ -58,7 +58,7 @@ jobs:
       run: |
         sed -i 's/[0-9]\+/0/' "serverfiles/steamapps/appmanifest_896660.acf"
         bash ./vhserver update
-    - name: ./vhserver update (update required - offline)
+    - name: ./vhserver update (remove appmanifest file)
       run: |
         rm --verbose "serverfiles/steamapps/appmanifest_896660.acf"
         bash ./vhserver update

@@ -51,6 +51,8 @@ jobs:
       run: bash ./vhserver stop
     - name: ./vhserver restart (server offline)
       run: bash ./vhserver restart
+    - name: ./vhserver debug
+      run: bash yes | ./vhserver debug
     # update
     - name: ./vhserver update (no update required)
       run: bash ./vhserver update

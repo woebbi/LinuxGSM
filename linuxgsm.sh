@@ -20,7 +20,7 @@ if [ -f ".dev-debug" ]; then
 	set -x
 fi
 
-version="v21.2.3"
+version="v21.2.4"
 shortname="core"
 gameservername="core"
 commandname="CORE"
@@ -47,7 +47,7 @@ userinput2="${2}"
 ## GitHub Branch Select
 # Allows for the use of different function files
 # from a different repo and/or branch.
-githubuser="GameServerManagers"
+githubuser="woebbi"
 githubrepo="LinuxGSM"
 githubbranch="master"
 

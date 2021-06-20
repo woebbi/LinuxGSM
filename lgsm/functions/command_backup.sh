@@ -9,6 +9,7 @@ commandname="BACKUP"
 commandaction="Backing up"
 ending=".tar.gz"
 functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+garbagedir="_stuff"
 
 fn_firstcommand_set
 

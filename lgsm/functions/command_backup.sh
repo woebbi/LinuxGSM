@@ -3,11 +3,13 @@
 # Author: Daniel Gibbs
 # Contributors: http://linuxgsm.com/contrib
 # Website: https://linuxgsm.com
-# Description: Creates a .tar.gz file in the backup directory.
+# Description: Creates a ${ending} file in the backup directory.
 
 commandname="BACKUP"
 commandaction="Backing up"
+ending=".tar.gz"
 functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+
 fn_firstcommand_set
 
 check.sh
@@ -15,13 +17,13 @@ check.sh
 # Trap to remove lockfile on quit.
 fn_backup_trap(){
 	echo -e ""
-	echo -en "backup ${backupname}.tar.gz..."
+	echo -en "backup ${backupname}${ending}..."
 	fn_print_canceled_eol_nl
-	fn_script_log_info "Backup ${backupname}.tar.gz: CANCELED"
-	rm -f "${backupdir:?}/${backupname}.tar.gz" | tee -a "${lgsmlog}"
-	echo -en "backup ${backupname}.tar.gz..."
+	fn_script_log_info "Backup ${backupname}${ending}: CANCELED"
+	rm -f "${backupdir:?}/${backupname}${ending}" | tee -a "${lgsmlog}"
+	echo -en "backup ${backupname}${ending}..."
 	fn_print_removed_eol_nl
-	fn_script_log_info "Backup ${backupname}.tar.gz: REMOVED"
+	fn_script_log_info "Backup ${backupname}${ending}: REMOVED"
 	# Remove lock file.
 	rm -f "${lockdir:?}/backup.lock"
 	fn_backup_start_server
@@ -127,9 +129,9 @@ fn_backup_create_lockfile(){
 fn_backup_compression(){
 	# Tells how much will be compressed using rootdirduexbackup value from info_distro and prompt for continue.
 	fn_print_info "A total of ${rootdirduexbackup} will be compressed."
-	fn_script_log_info "A total of ${rootdirduexbackup} will be compressed: ${backupdir}/${backupname}.tar.gz"
-	fn_print_dots "Backup (${rootdirduexbackup}) ${backupname}.tar.gz, in progress..."
-	fn_script_log_info "backup ${rootdirduexbackup} ${backupname}.tar.gz, in progress"
+	fn_script_log_info "A total of ${rootdirduexbackup} will be compressed: ${backupdir}/${backupname}${ending}"
+	fn_print_dots "Backup (${rootdirduexbackup}) ${backupname}${ending}, in progress..."
+	fn_script_log_info "backup ${rootdirduexbackup} ${backupname}${ending}, in progress"
 	excludedir=$(fn_backup_relpath)
 
 	# Check that excludedir is a valid path.
@@ -138,8 +140,9 @@ fn_backup_compression(){
 		fn_script_log_fatal "Problem identifying the previous backup directory for exclusion"
 		core_exit.sh
 	fi
-
-	tar -czf "${backupdir}/${backupname}.tar.gz" -C "${rootdir}" --exclude "${excludedir}" --exclude "${lockdir}/backup.lock" ./.
+	echo "${garbagedir}"
+	echo "${excludedir}"
+	tar --use-compress-program="pigz --fast --recursive -p 15 | pv" -cf "${backupdir}/${backupname}${ending}" -C "${rootdir}" --exclude "${excludedir}" --exclude "${garbagedir}" --exclude "${lockdir}/backup.lock" ./.
 	local exitcode=$?
 	if [ "${exitcode}" != 0 ]; then
 		fn_print_fail_eol
@@ -149,8 +152,8 @@ fn_backup_compression(){
 		fn_script_log_fatal "Starting backup"
 	else
 		fn_print_ok_eol
-		fn_print_ok_nl "Completed: ${backupname}.tar.gz, total size $(du -sh "${backupdir}/${backupname}.tar.gz" | awk '{print $1}')"
-		fn_script_log_pass "Backup created: ${backupname}.tar.gz, total size $(du -sh "${backupdir}/${backupname}.tar.gz" | awk '{print $1}')"
+		fn_print_ok_nl "Completed: ${backupname}${ending}, total size $(du -sh "${backupdir}/${backupname}${ending}" | awk '{print $1}')"
+		fn_script_log_pass "Backup created: ${backupname}${ending}, total size $(du -sh "${backupdir}/${backupname}${ending}" | awk '{print $1}')"
 	fi
 	# Remove lock file
 	rm -f "${lockdir:?}/backup.lock"
@@ -165,7 +168,7 @@ fn_backup_prune(){
 		# How many backups exceed maxbackups.
 		backupquotadiff=$((backupcount-maxbackups))
 		# How many backups exceed maxbackupdays.
-		backupsoudatedcount=$(find "${backupdir}"/ -type f -name "*.tar.gz" -mtime +"${maxbackupdays}"|wc -l)
+		backupsoudatedcount=$(find "${backupdir}"/ -type f -name "*${ending}" -mtime +"${maxbackupdays}"|wc -l)
 		# If anything can be cleared.
 		if [ "${backupquotadiff}" -gt "0" ]||[ "${backupsoudatedcount}" -gt "0" ]; then
 			fn_print_dots "Pruning"
@@ -180,7 +183,7 @@ fn_backup_prune(){
 				fn_print_dots "Pruning: Clearing ${backupquotadiff} backup(s)"
 				fn_script_log_info "Pruning: Clearing ${backupquotadiff} backup(s)"
 				# Clear backups over quota.
-				find "${backupdir}"/ -type f -name "*.tar.gz" -printf '%T@ %p\n' | sort -rn | tail -${backupquotadiff} | cut -f2- -d" " | xargs rm
+				find "${backupdir}"/ -type f -name "*${ending}" -printf '%T@ %p\n' | sort -rn | tail -${backupquotadiff} | cut -f2- -d" " | xargs rm
 				fn_print_ok_nl "Pruning: Clearing ${backupquotadiff} backup(s)"
 				fn_script_log_pass "Pruning: Cleared ${backupquotadiff} backup(s)"
 			# If maxbackupdays is used over maxbackups.
